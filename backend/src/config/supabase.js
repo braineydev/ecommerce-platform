@@ -1,0 +1,15 @@
+require("dotenv").config();
+const { createClient } = require("@supabase/supabase-js");
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error("Missing Supabase environment variables!");
+  process.exit(1);
+}
+
+// Initialize the Supabase client with the Service Role key
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+module.exports = supabase;
