@@ -72,7 +72,8 @@ exports.verifyPayment = async (req, res) => {
     .select()
     .single();
 
-  if (paymentError) return res.status(500).json({ error: paymentError.message });
+  if (paymentError)
+    return res.status(500).json({ error: paymentError.message });
 
   const { error: orderError } = await supabase
     .from("orders")

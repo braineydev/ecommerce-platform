@@ -1,9 +1,17 @@
 const supabase = require("../config/supabase");
 const multer = require("multer");
+const crypto = require("crypto");
 
 // Configure multer to store files in memory temporarily
 const storage = multer.memoryStorage();
-exports.upload = multer({ storage: storage }).single("image");
+exports.upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+  fileFilter: (req, file, callback) => {
+    if (["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) return callback(null, true);
+    callback(new Error("Only JPEG, PNG, and WebP images are allowed"));
+  },
+}).single("image");
 
 exports.uploadProductImage = async (req, res) => {
   if (!req.file) {
@@ -11,7 +19,8 @@ exports.uploadProductImage = async (req, res) => {
   }
 
   const file = req.file;
-  const uniqueFilename = `${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`;
+  const extension = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[file.mimetype];
+  const uniqueFilename = `${Date.now()}-${crypto.randomUUID()}.${extension}`;
 
   const { data, error } = await supabase.storage
     .from("product-images")

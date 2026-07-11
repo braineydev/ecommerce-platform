@@ -28,6 +28,9 @@ exports.addToCart = async (req, res) => {
   if (!product_id) {
     return res.status(400).json({ error: "Product ID is required" });
   }
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 100) {
+    return res.status(400).json({ error: "Quantity must be a whole number between 1 and 100" });
+  }
 
   const { data: existingItem, error: existingItemError } = await supabase
     .from("cart_items")

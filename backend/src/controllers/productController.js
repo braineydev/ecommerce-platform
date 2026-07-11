@@ -1,5 +1,24 @@
 const supabase = require("../config/supabase");
 
+const PRODUCT_SELECT = "*, categories(name, slug)";
+
+const normalizeProduct = product => {
+  if (!product) return product;
+
+  const category = product.categories || product.category || null;
+  const stock = Number(product.stock || 0);
+
+  return {
+    ...product,
+    price: Number(product.price || 0),
+    stock,
+    images: Array.isArray(product.images) ? product.images.filter(Boolean) : [],
+    categories: category,
+    category,
+    availability_status: stock > 0 ? "in_stock" : "out_of_stock",
+  };
+};
+
 // Get all categories
 exports.getCategories = async (req, res) => {
   const { data, error } = await supabase
@@ -15,7 +34,7 @@ exports.getCategories = async (req, res) => {
 exports.getProducts = async (req, res) => {
   const { search, category, featured } = req.query;
 
-  let query = supabase.from("products").select("*, categories(name, slug)");
+  let query = supabase.from("products").select(PRODUCT_SELECT);
 
   if (featured === "true") {
     query = query.eq("is_featured", true);
@@ -34,5 +53,26 @@ exports.getProducts = async (req, res) => {
   });
 
   if (error) return res.status(500).json({ error: error.message });
-  res.status(200).json({ data });
+  res.status(200).json({ data: data.map(normalizeProduct) });
+};
+
+// Get a single product by ID
+exports.getProductById = async (req, res) => {
+  const { id } = req.params;
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.status(200).json({ product: normalizeProduct(data) });
 };
