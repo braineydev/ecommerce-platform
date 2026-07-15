@@ -2,6 +2,11 @@
 const { Client } = require("pg");
 const fs = require("fs");
 const path = require("path");
+const dotenv = require("dotenv");
+
+const backendRoot = path.join(__dirname, "..");
+dotenv.config({ path: path.join(backendRoot, ".env") });
+dotenv.config({ path: path.join(backendRoot, ".env.local") });
 
 (async () => {
   try {
@@ -19,10 +24,12 @@ const path = require("path");
     }
 
     const connectionString =
-      process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
+      process.env.DATABASE_URL ||
+      process.env.SUPABASE_DB_URL ||
+      process.env.SUPABASE_DATABASE_URL;
     if (!connectionString) {
       console.error(
-        "Please set DATABASE_URL (or SUPABASE_DB_URL) in your environment.",
+        "Missing database connection string. Set DATABASE_URL (or SUPABASE_DB_URL / SUPABASE_DATABASE_URL) in your environment before running migrations.",
       );
       process.exit(1);
     }

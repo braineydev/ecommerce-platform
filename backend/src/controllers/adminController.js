@@ -1,14 +1,53 @@
 const supabase = require("../config/supabase");
 
+const slugify = value =>
+  String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const normalizePriceValues = (priceValue, initialValue, discountedValue) => {
+  const parsedInitialPrice = Number(initialValue ?? priceValue ?? 0);
+  const parsedDiscountedPrice = Number(discountedValue ?? priceValue ?? 0);
+  return { parsedInitialPrice, parsedDiscountedPrice };
+};
+
 // Add a New Product
 exports.addProduct = async (req, res) => {
-  const { category_id, name, description, price, stock, images, is_featured } =
-    req.body;
+  const {
+    category_id,
+    name,
+    description,
+    price,
+    initial_price,
+    discounted_price,
+    stock,
+    images,
+    image_name,
+    is_featured,
+    brand,
+    slug,
+    meta_title,
+    meta_description,
+  } = req.body;
 
-  if (!category_id || !name || !price) {
+  const { parsedInitialPrice, parsedDiscountedPrice } = normalizePriceValues(
+    price,
+    initial_price,
+    discounted_price,
+  );
+
+  if (!category_id || !name || !parsedDiscountedPrice) {
     return res
       .status(400)
-      .json({ error: "Category, name, and price are required" });
+      .json({ error: "Category, name, and discounted price are required" });
+  }
+
+  if (parsedDiscountedPrice > parsedInitialPrice) {
+    return res
+      .status(400)
+      .json({ error: "Discounted price cannot exceed the initial price" });
   }
 
   const { data, error } = await supabase
@@ -17,17 +56,30 @@ exports.addProduct = async (req, res) => {
       {
         category_id,
         name,
+        brand: typeof brand === "string" ? brand.trim().slice(0, 80) : null,
+        slug: slugify(slug || name),
         description,
-        price,
+        meta_title: meta_title || null,
+        meta_description: meta_description || null,
+        price: parsedDiscountedPrice,
+        initial_price: parsedInitialPrice,
+        discounted_price: parsedDiscountedPrice,
         stock: stock || 0,
         images: Array.isArray(images) ? images : [],
-        is_featured: is_featured || false,
+        image_name: typeof image_name === "string" ? image_name.trim() : null,
+        is_featured: Boolean(is_featured),
       },
     ])
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error)
+    return res.status(error.code === "23505" ? 409 : 500).json({
+      error:
+        error.code === "23505"
+          ? "This URL slug is already in use"
+          : error.message,
+    });
   res
     .status(201)
     .json({ message: "Product added successfully", product: data });
@@ -36,13 +88,39 @@ exports.addProduct = async (req, res) => {
 // Update an Existing Product
 exports.updateProduct = async (req, res) => {
   const { product_id } = req.params;
-  const { category_id, name, description, price, stock, images, is_featured } =
-    req.body;
+  const {
+    category_id,
+    name,
+    description,
+    price,
+    initial_price,
+    discounted_price,
+    stock,
+    images,
+    image_name,
+    is_featured,
+    brand,
+    slug,
+    meta_title,
+    meta_description,
+  } = req.body;
 
-  if (!category_id || !name || !price) {
+  const { parsedInitialPrice, parsedDiscountedPrice } = normalizePriceValues(
+    price,
+    initial_price,
+    discounted_price,
+  );
+
+  if (!category_id || !name || !parsedDiscountedPrice) {
     return res
       .status(400)
-      .json({ error: "Category, name, and price are required" });
+      .json({ error: "Category, name, and discounted price are required" });
+  }
+
+  if (parsedDiscountedPrice > parsedInitialPrice) {
+    return res
+      .status(400)
+      .json({ error: "Discounted price cannot exceed the initial price" });
   }
 
   const { data, error } = await supabase
@@ -50,17 +128,30 @@ exports.updateProduct = async (req, res) => {
     .update({
       category_id,
       name,
+      brand: typeof brand === "string" ? brand.trim().slice(0, 80) : null,
+      slug: slugify(slug || name),
       description,
-      price,
+      meta_title: meta_title || null,
+      meta_description: meta_description || null,
+      price: parsedDiscountedPrice,
+      initial_price: parsedInitialPrice,
+      discounted_price: parsedDiscountedPrice,
       stock: stock || 0,
       images: Array.isArray(images) ? images : [],
-      is_featured: is_featured || false,
+      image_name: typeof image_name === "string" ? image_name.trim() : null,
+      is_featured: Boolean(is_featured),
     })
     .eq("id", product_id)
     .select()
     .single();
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error)
+    return res.status(error.code === "23505" ? 409 : 500).json({
+      error:
+        error.code === "23505"
+          ? "This URL slug is already in use"
+          : error.message,
+    });
   if (!data) return res.status(404).json({ error: "Product not found" });
 
   res

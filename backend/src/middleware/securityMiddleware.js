@@ -1,7 +1,10 @@
 const TRUSTED_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 const getAllowedOrigins = () =>
-  (process.env.FRONTEND_ORIGINS || "http://localhost:3000")
+  (
+    process.env.FRONTEND_ORIGINS ||
+    "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001"
+  )
     .split(",")
     .map(origin => origin.trim())
     .filter(Boolean);
@@ -36,14 +39,18 @@ const createRateLimiter = ({ windowMs, max, message }) => {
     const now = Date.now();
     const key = `${req.ip}:${req.path}`;
     const entry = requests.get(key);
-    const recent = entry && now - entry.startedAt < windowMs
-      ? entry
-      : { startedAt: now, count: 0 };
+    const recent =
+      entry && now - entry.startedAt < windowMs
+        ? entry
+        : { startedAt: now, count: 0 };
 
     recent.count += 1;
     requests.set(key, recent);
     if (recent.count > max) {
-      res.set("Retry-After", String(Math.ceil((windowMs - (now - recent.startedAt)) / 1000)));
+      res.set(
+        "Retry-After",
+        String(Math.ceil((windowMs - (now - recent.startedAt)) / 1000)),
+      );
       return res.status(429).json({ error: message });
     }
     next();

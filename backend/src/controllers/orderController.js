@@ -75,14 +75,14 @@ exports.createOrder = async (req, res) => {
         return {
           product_id: productId,
           quantity,
-          products: { price: product.price },
+          products: { price: product.price, stock: product.stock },
         };
       })
       .filter(Boolean);
   } else {
     const { data, error: cartError } = await supabase
       .from("cart_items")
-      .select("quantity, product_id, products(price)")
+      .select("quantity, product_id, products(price, stock)")
       .eq("profile_id", userId);
 
     if (cartError) return res.status(500).json({ error: cartError.message });
@@ -93,6 +93,12 @@ exports.createOrder = async (req, res) => {
     return res
       .status(400)
       .json({ error: "Cart is empty or could not be fetched" });
+  }
+
+  for (const item of cartItems) {
+    if (Number(item.quantity) > Number(item.products?.stock ?? 0)) {
+      return res.status(409).json({ error: "One or more products are no longer available in the requested quantity" });
+    }
   }
 
   let calculatedTotal = deliveryFee;
@@ -139,6 +145,17 @@ exports.createOrder = async (req, res) => {
 
   if (orderItemsError) {
     return res.status(500).json({ error: orderItemsError.message });
+  }
+
+  // The database function locks product rows and prevents simultaneous checkouts
+  // from taking stock below zero.
+  const { error: stockError } = await supabase.rpc("decrement_stock", {
+    items: orderItemsData.map(item => ({ id: item.product_id, quantity: item.quantity })),
+  });
+  if (stockError) {
+    await supabase.from("order_items").delete().eq("order_id", newOrder.id);
+    await supabase.from("orders").delete().eq("id", newOrder.id);
+    return res.status(409).json({ error: "Stock changed before the order could be placed. Please review your cart." });
   }
 
   if (!Array.isArray(items) || items.length === 0) {

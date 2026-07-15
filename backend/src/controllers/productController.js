@@ -8,9 +8,16 @@ const normalizeProduct = product => {
   const category = product.categories || product.category || null;
   const stock = Number(product.stock || 0);
 
+  const discountedPrice = Number(
+    product.discounted_price ?? product.price ?? 0,
+  );
+  const initialPrice = Number(product.initial_price ?? discountedPrice);
+
   return {
     ...product,
-    price: Number(product.price || 0),
+    price: discountedPrice,
+    initial_price: initialPrice,
+    discounted_price: discountedPrice,
     stock,
     images: Array.isArray(product.images) ? product.images.filter(Boolean) : [],
     categories: category,
@@ -32,7 +39,7 @@ exports.getCategories = async (req, res) => {
 
 // Get products with optional search, category, and featured filters
 exports.getProducts = async (req, res) => {
-  const { search, category, featured } = req.query;
+  const { search, category, featured, brand, min_price, max_price } = req.query;
 
   let query = supabase.from("products").select(PRODUCT_SELECT);
 
@@ -44,8 +51,19 @@ exports.getProducts = async (req, res) => {
     query = query.eq("category_id", category);
   }
 
+  if (brand) query = query.ilike("brand", `%${brand}%`);
+  if (min_price !== undefined && Number.isFinite(Number(min_price)))
+    query = query.gte("price", Number(min_price));
+  if (max_price !== undefined && Number.isFinite(Number(max_price)))
+    query = query.lte("price", Number(max_price));
+
   if (search) {
-    query = query.ilike("name", `%${search}%`);
+    const searchTerm = String(search).trim();
+    if (searchTerm) {
+      query = query.or(
+        `name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,brand.ilike.%${searchTerm}%,slug.ilike.%${searchTerm}%`,
+      );
+    }
   }
 
   const { data, error } = await query.order("created_at", {
@@ -60,11 +78,20 @@ exports.getProducts = async (req, res) => {
 exports.getProductById = async (req, res) => {
   const { id } = req.params;
 
-  const { data, error } = await supabase
+  // Prefer the public SEO slug while retaining ID URLs for existing bookmarks.
+  let { data, error } = await supabase
     .from("products")
     .select(PRODUCT_SELECT)
-    .eq("id", id)
+    .eq("slug", id)
     .single();
+
+  if (error?.code === "PGRST116") {
+    ({ data, error } = await supabase
+      .from("products")
+      .select(PRODUCT_SELECT)
+      .eq("id", id)
+      .single());
+  }
 
   if (error) {
     if (error.code === "PGRST116") {
