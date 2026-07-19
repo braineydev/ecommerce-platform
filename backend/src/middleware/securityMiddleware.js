@@ -3,6 +3,7 @@ const TRUSTED_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 const getAllowedOrigins = () =>
   (
     process.env.FRONTEND_ORIGINS ||
+    process.env.FRONTEND_URL ||
     "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001"
   )
     .split(",")

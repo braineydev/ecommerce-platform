@@ -45,5 +45,6 @@ Use the same `npm run migrate` command in your CI pipeline prior to deploying th
 ## Security
 
 - Never commit `DATABASE_URL` or Supabase service role keys to source control.
+- Set `SUPABASE_SERVICE_ROLE_KEY` in `backend/.env`. Do not use `SUPABASE_KEY` or any `NEXT_PUBLIC_` variable for this key.
 - Call `decrement_stock` only from server-side code (the backend already calls it). The migration includes a `REVOKE EXECUTE` step to remove anon access — keep this in migrations.
 - For production high-concurrency needs consider DB-level monitoring and backups before applying migrations.

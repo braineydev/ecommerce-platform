@@ -32,6 +32,17 @@ exports.addToCart = async (req, res) => {
     return res.status(400).json({ error: "Quantity must be a whole number between 1 and 100" });
   }
 
+  const { data: product, error: productError } = await supabase
+    .from("products")
+    .select("id, stock")
+    .eq("id", product_id)
+    .maybeSingle();
+
+  if (productError) return res.status(500).json({ error: "Unable to validate product availability" });
+  if (!product || Number(product.stock) < 1) {
+    return res.status(400).json({ error: "This product is currently unavailable" });
+  }
+
   const { data: existingItem, error: existingItemError } = await supabase
     .from("cart_items")
     .select("*")
@@ -45,12 +56,19 @@ exports.addToCart = async (req, res) => {
 
   let result;
   if (existingItem) {
+    const newQuantity = Number(existingItem.quantity) + quantity;
+    if (newQuantity > 100 || newQuantity > Number(product.stock)) {
+      return res.status(400).json({ error: "Requested quantity is not available" });
+    }
     result = await supabase
       .from("cart_items")
-      .update({ quantity: existingItem.quantity + quantity })
+      .update({ quantity: newQuantity })
       .eq("id", existingItem.id)
       .select();
   } else {
+    if (quantity > Number(product.stock)) {
+      return res.status(400).json({ error: "Requested quantity is not available" });
+    }
     result = await supabase
       .from("cart_items")
       .insert([{ profile_id: userId, product_id, quantity }])

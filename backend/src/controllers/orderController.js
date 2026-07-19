@@ -6,7 +6,7 @@ exports.createOrder = async (req, res) => {
   const shipping_address =
     req.body.shipping_address || req.body.shippingAddress;
 
-  if (!shipping_address) {
+  if (typeof shipping_address !== "string" || !shipping_address.trim() || shipping_address.trim().length > 500) {
     return res.status(400).json({ error: "Shipping address is required" });
   }
 
@@ -45,10 +45,10 @@ exports.createOrder = async (req, res) => {
       .map(item => item.id || item.product_id)
       .filter(Boolean);
 
-    if (productIds.length === 0) {
+    if (productIds.length === 0 || new Set(productIds).size !== productIds.length) {
       return res
         .status(400)
-        .json({ error: "Cart items are missing product IDs" });
+        .json({ error: "Cart items must contain unique product IDs" });
     }
 
     const { data: products, error: productsError } = await supabase
@@ -117,7 +117,7 @@ exports.createOrder = async (req, res) => {
 
   const orderInsert = {
     profile_id: userId,
-    shipping_address,
+    shipping_address: shipping_address.trim(),
     total_amount: calculatedTotal,
     status: "pending",
   };
@@ -197,113 +197,6 @@ exports.getMyOrders = async (req, res) => {
   }
 };
 
-// Checkout with Stock Decrement
-exports.checkout = async (req, res) => {
-  try {
-    const { cartItems, total, userId } = req.body;
-
-    // Validate input
-    if (!Array.isArray(cartItems) || cartItems.length === 0) {
-      return res.status(400).json({ error: "Cart items are required" });
-    }
-
-    if (total === undefined || total === null) {
-      return res.status(400).json({ error: "Total amount is required" });
-    }
-
-    // Create the order
-    const orderInsert = {
-      profile_id: userId,
-      total_amount: total,
-      status: "pending",
-      shipping_address: req.body.shippingAddress || "To be confirmed",
-    };
-
-    // Validate stock availability before creating the order to avoid overselling
-    const productIds = cartItems.map(i => i.id);
-    const { data: productsList, error: productsFetchError } = await supabase
-      .from("products")
-      .select("id, stock")
-      .in("id", productIds);
-
-    if (productsFetchError) {
-      throw new Error(
-        `Failed to fetch product stock: ${productsFetchError.message}`,
-      );
-    }
-
-    const stockById = new Map((productsList || []).map(p => [p.id, p.stock]));
-
-    for (const item of cartItems) {
-      const available = Number(stockById.get(item.id) ?? 0);
-      if (available < item.quantity) {
-        return res.status(400).json({
-          error: `Insufficient stock for product ${item.id}. Available: ${available}, requested: ${item.quantity}`,
-        });
-      }
-    }
-
-    const { data: newOrder, error: orderError } = await supabase
-      .from("orders")
-      .insert([orderInsert])
-      .select()
-      .single();
-
-    if (orderError) {
-      throw new Error(`Failed to create order: ${orderError.message}`);
-    }
-
-    // Insert order items
-    const orderItemsData = cartItems.map(item => ({
-      order_id: newOrder.id,
-      product_id: item.id,
-      quantity: item.quantity,
-      price_at_purchase: item.price,
-    }));
-
-    const { error: orderItemsError } = await supabase
-      .from("order_items")
-      .insert(orderItemsData);
-
-    if (orderItemsError) {
-      throw new Error(`Failed to add order items: ${orderItemsError.message}`);
-    }
-
-    // Attempt atomic stock decrement via Postgres RPC
-    try {
-      const { error: rpcError } = await supabase.rpc("decrement_stock", {
-        items: cartItems,
-      });
-
-      if (rpcError) {
-        // Roll back order_items and order if RPC failed
-        console.error("decrement_stock RPC failed:", rpcError.message);
-        await supabase.from("order_items").delete().eq("order_id", newOrder.id);
-        await supabase.from("orders").delete().eq("id", newOrder.id);
-        return res.status(400).json({ error: rpcError.message });
-      }
-    } catch (error) {
-      console.error("Error calling decrement_stock RPC:", error);
-      // Attempt rollback
-      await supabase.from("order_items").delete().eq("order_id", newOrder.id);
-      await supabase.from("orders").delete().eq("id", newOrder.id);
-      return res.status(500).json({ error: "Failed to decrement stock" });
-    }
-
-    // Clear user's cart if it exists
-    if (userId) {
-      await supabase.from("cart_items").delete().eq("profile_id", userId);
-    }
-
-    res.status(201).json({
-      message: "Order placed successfully!",
-      orderId: newOrder.id,
-      order: newOrder,
-    });
-  } catch (error) {
-    console.error("Checkout error:", error);
-    res.status(500).json({
-      error: error.message || "Checkout failed",
-    });
-  }
-};
+// Retained for backwards compatibility. All checkout requests must use the
+// secure implementation above, which derives the customer and totals server-side.
+exports.checkout = exports.createOrder;

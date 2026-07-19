@@ -21,13 +21,25 @@ const normalizeProduct = product => {
   );
   const initialPrice = Number(product.initial_price ?? discountedPrice);
 
+  const uploadedImages = Array.isArray(product.images)
+    ? product.images.filter(image => typeof image === "string" && image.trim())
+    : [];
+  const imageName =
+    typeof product.image_name === "string" && product.image_name.trim()
+      ? product.image_name.trim()
+      : null;
+  const images = uploadedImages.length > 0 ? uploadedImages : imageName ? [imageName] : [];
+
   return {
     ...product,
     price: discountedPrice,
     initial_price: initialPrice,
     discounted_price: discountedPrice,
     stock,
-    images: Array.isArray(product.images) ? product.images.filter(Boolean) : [],
+    // `image_name` was used before `images` became the storefront field.
+    // Preserve it as a fallback so older products keep their uploaded image.
+    images,
+    image_name: imageName || images[0] || null,
     categories: category,
     category,
     category_id: category?.id ?? product.category_id ?? null,

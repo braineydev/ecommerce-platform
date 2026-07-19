@@ -53,4 +53,35 @@ const updateCustomer = async (req, res) => {
   }
 };
 
-module.exports = { getAllCustomers, updateCustomer };
+const deleteCustomer = async (req, res) => {
+  const { customer_id } = req.params;
+
+  if (customer_id === req.user?.id) {
+    return res.status(400).json({ error: "You cannot delete your own administrator account." });
+  }
+
+  try {
+    const { data: customer, error: customerError } = await supabase
+      .from("profiles")
+      .select("id, role")
+      .eq("id", customer_id)
+      .single();
+
+    if (customerError || !customer) {
+      return res.status(404).json({ error: "Customer not found" });
+    }
+    if (customer.role === "admin") {
+      return res.status(403).json({ error: "Administrator accounts cannot be deleted here." });
+    }
+
+    const { error } = await supabase.auth.admin.deleteUser(customer_id);
+    if (error) throw error;
+
+    res.status(200).json({ message: "Customer account deleted", customer_id });
+  } catch (error) {
+    console.error("Error deleting customer:", error);
+    res.status(500).json({ error: error.message || "Unable to delete customer" });
+  }
+};
+
+module.exports = { getAllCustomers, updateCustomer, deleteCustomer };

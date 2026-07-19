@@ -4,11 +4,15 @@ const supabase = require("../config/supabase");
 exports.submitPayment = async (req, res) => {
   const userId = req.user.id;
   const { order_id, mpesa_reference } = req.body;
+  const reference = typeof mpesa_reference === "string" ? mpesa_reference.trim().toUpperCase() : "";
 
-  if (!order_id || !mpesa_reference) {
+  if (!order_id || !reference) {
     return res
       .status(400)
       .json({ error: "Order ID and M-Pesa reference are required" });
+  }
+  if (!/^[A-Z0-9-]{6,64}$/.test(reference)) {
+    return res.status(400).json({ error: "Enter a valid payment reference" });
   }
 
   const { data: order, error: orderError } = await supabase
@@ -26,12 +30,20 @@ exports.submitPayment = async (req, res) => {
     return res.status(400).json({ error: "Order is no longer pending" });
   }
 
+  const { data: existingPayment, error: existingPaymentError } = await supabase
+    .from("payments")
+    .select("id")
+    .eq("order_id", order_id)
+    .maybeSingle();
+  if (existingPaymentError) return res.status(500).json({ error: "Unable to validate payment" });
+  if (existingPayment) return res.status(409).json({ error: "A payment reference has already been submitted for this order" });
+
   const { data, error } = await supabase
     .from("payments")
     .insert([
       {
         order_id,
-        mpesa_reference: mpesa_reference.toUpperCase(),
+        mpesa_reference: reference,
         status: "pending",
       },
     ])

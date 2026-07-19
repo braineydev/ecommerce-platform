@@ -58,8 +58,17 @@ app.use("/api/admin", adminRoutes);
 
 app.use((error, req, res, next) => {
   if (error) {
-    const status = error.name === "MulterError" || error.message === "Only JPEG, PNG, and WebP images are allowed" ? 400 : 500;
-    return res.status(status).json({ error: status === 400 ? error.message : "Unexpected server error" });
+    const isCorsError = error.message === "CORS policy does not allow this origin.";
+    const isUploadError =
+      error.name === "MulterError" || error.message?.includes("images are allowed");
+    const status = isCorsError ? 403 : isUploadError ? 400 : 500;
+    return res.status(status).json({
+      error: isCorsError
+        ? "Request origin is not allowed"
+        : isUploadError
+          ? error.message
+          : "Unexpected server error",
+    });
   }
   next();
 });
@@ -92,6 +101,6 @@ app.get("/api/health", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server is listening on port ${PORT}`);
 });
