@@ -17,6 +17,15 @@ router.get("/me", (req, res) => {
   });
 });
 
+router.get("/session-check", (req, res) => {
+  res.status(200).json({
+    message: "Admin session cookie check",
+    cookie_present: Boolean(req.headers.cookie),
+    user_id: req.user?.id || null,
+    user_role: req.user?.app_metadata?.role || req.user?.role || null,
+  });
+});
+
 router.post("/products", adminController.addProduct);
 router.put("/products/:product_id", adminController.updateProduct);
 router.delete("/products/:product_id", adminController.deleteProduct);

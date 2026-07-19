@@ -17,6 +17,11 @@ const setSecurityHeaders = (req, res, next) => {
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     "Cache-Control": "no-store",
   });
+  // HSTS is meaningful only over HTTPS; sending it during local development can
+  // make a browser refuse the local HTTP application.
+  if (process.env.NODE_ENV === "production") {
+    res.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  }
   next();
 };
 
@@ -26,7 +31,13 @@ const requireTrustedOrigin = (req, res, next) => {
   if (TRUSTED_METHODS.has(req.method)) return next();
 
   const origin = req.get("origin");
-  if (!origin || !getAllowedOrigins().includes(origin)) {
+  if (!origin) {
+    // Some proxy setups may forward requests without the original Origin header.
+    // We already validate browser origins in CORS, so allow missing Origin here.
+    return next();
+  }
+
+  if (!getAllowedOrigins().includes(origin)) {
     return res.status(403).json({ error: "Untrusted request origin" });
   }
   next();
@@ -37,7 +48,15 @@ const createRateLimiter = ({ windowMs, max, message }) => {
 
   return (req, res, next) => {
     const now = Date.now();
-    const key = `${req.ip}:${req.path}`;
+    // Keep this in-memory guard bounded during long-running processes so a
+    // stream of unique addresses cannot grow the map indefinitely.
+    if (requests.size > 5000) {
+      for (const [existingKey, existingEntry] of requests) {
+        if (now - existingEntry.startedAt >= windowMs)
+          requests.delete(existingKey);
+      }
+    }
+    const key = `${req.ip}:${req.baseUrl}${req.path}`;
     const entry = requests.get(key);
     const recent =
       entry && now - entry.startedAt < windowMs

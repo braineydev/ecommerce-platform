@@ -13,6 +13,37 @@ const normalizePriceValues = (priceValue, initialValue, discountedValue) => {
   return { parsedInitialPrice, parsedDiscountedPrice };
 };
 
+const validateProductValues = ({
+  category_id,
+  name,
+  stock,
+  parsedInitialPrice,
+  parsedDiscountedPrice,
+}) => {
+  if (
+    !category_id ||
+    typeof name !== "string" ||
+    !name.trim() ||
+    !Number.isFinite(parsedInitialPrice) ||
+    !Number.isFinite(parsedDiscountedPrice) ||
+    parsedInitialPrice < 0 ||
+    parsedDiscountedPrice < 0
+  ) {
+    return "Category, name, and valid non-negative prices are required";
+  }
+  if (
+    stock !== undefined &&
+    (!Number.isInteger(Number(stock)) ||
+      Number(stock) < 0 ||
+      Number(stock) > 1000000)
+  ) {
+    return "Stock must be a whole number between 0 and 1,000,000";
+  }
+  if (parsedDiscountedPrice > parsedInitialPrice)
+    return "Discounted price cannot exceed the initial price";
+  return null;
+};
+
 // Add a New Product
 exports.addProduct = async (req, res) => {
   const {
@@ -38,23 +69,21 @@ exports.addProduct = async (req, res) => {
     discounted_price,
   );
 
-  if (!category_id || !name || !parsedDiscountedPrice) {
-    return res
-      .status(400)
-      .json({ error: "Category, name, and discounted price are required" });
-  }
+  const validationError = validateProductValues({
+    category_id,
+    name,
+    stock,
+    parsedInitialPrice,
+    parsedDiscountedPrice,
+  });
+  if (validationError) return res.status(400).json({ error: validationError });
 
-  if (parsedDiscountedPrice > parsedInitialPrice) {
-    return res
-      .status(400)
-      .json({ error: "Discounted price cannot exceed the initial price" });
-  }
-
+  const numericCategoryId = Number(category_id);
   const { data, error } = await supabase
     .from("products")
     .insert([
       {
-        category_id,
+        category_id: numericCategoryId,
         name,
         brand: typeof brand === "string" ? brand.trim().slice(0, 80) : null,
         slug: slugify(slug || name),
@@ -64,7 +93,7 @@ exports.addProduct = async (req, res) => {
         price: parsedDiscountedPrice,
         initial_price: parsedInitialPrice,
         discounted_price: parsedDiscountedPrice,
-        stock: stock || 0,
+        stock: Number(stock || 0),
         images: Array.isArray(images) ? images : [],
         image_name: typeof image_name === "string" ? image_name.trim() : null,
         is_featured: Boolean(is_featured),
@@ -73,13 +102,20 @@ exports.addProduct = async (req, res) => {
     .select()
     .single();
 
-  if (error)
+  if (error) {
+    console.error("Admin addProduct failed:", {
+      category_id: numericCategoryId,
+      error: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
     return res.status(error.code === "23505" ? 409 : 500).json({
       error:
         error.code === "23505"
           ? "This URL slug is already in use"
           : error.message,
     });
+  }
   res
     .status(201)
     .json({ message: "Product added successfully", product: data });
@@ -111,22 +147,20 @@ exports.updateProduct = async (req, res) => {
     discounted_price,
   );
 
-  if (!category_id || !name || !parsedDiscountedPrice) {
-    return res
-      .status(400)
-      .json({ error: "Category, name, and discounted price are required" });
-  }
+  const validationError = validateProductValues({
+    category_id,
+    name,
+    stock,
+    parsedInitialPrice,
+    parsedDiscountedPrice,
+  });
+  if (validationError) return res.status(400).json({ error: validationError });
 
-  if (parsedDiscountedPrice > parsedInitialPrice) {
-    return res
-      .status(400)
-      .json({ error: "Discounted price cannot exceed the initial price" });
-  }
-
+  const numericCategoryId = Number(category_id);
   const { data, error } = await supabase
     .from("products")
     .update({
-      category_id,
+      category_id: numericCategoryId,
       name,
       brand: typeof brand === "string" ? brand.trim().slice(0, 80) : null,
       slug: slugify(slug || name),
@@ -136,14 +170,14 @@ exports.updateProduct = async (req, res) => {
       price: parsedDiscountedPrice,
       initial_price: parsedInitialPrice,
       discounted_price: parsedDiscountedPrice,
-      stock: stock || 0,
+      stock: Number(stock || 0),
       images: Array.isArray(images) ? images : [],
       image_name: typeof image_name === "string" ? image_name.trim() : null,
       is_featured: Boolean(is_featured),
     })
     .eq("id", product_id)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error)
     return res.status(error.code === "23505" ? 409 : 500).json({
