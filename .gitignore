@@ -12,6 +12,7 @@ frontend/.env
 # OS files
 .DS_Store
 Thumbs.db
+nul
 
 # VS Code
 .vscode/
