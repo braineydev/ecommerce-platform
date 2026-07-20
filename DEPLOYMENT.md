@@ -35,7 +35,7 @@ This repository includes `render.yaml`. In Render, choose **New → Blueprint**,
 In the Render service environment settings, enter the values from the backend table above. Render provides `PORT` automatically; do not set it manually. After the first deploy, copy the service URL (for example, `https://ecommerce-platform-api.onrender.com`) and set the frontend build-time variable:
 
 ```env
-BACKEND_API_URL=https://ecommerce-platform-api.onrender.com/api
+BACKEND_API_URL=https://tripple-ore.onrender.com/api
 ```
 
 For Google sign-in, also add `https://shop.example.com/auth/callback` to the allowed redirect URLs in your Supabase Auth settings.
