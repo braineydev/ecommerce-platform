@@ -553,7 +553,7 @@ export default function AdminPage() {
               </div>
             )}
             {success && (
-              <div className="pointer-events-none fixed inset-x-0 top-4 z-[80] flex justify-center px-4 sm:px-6" role="status" aria-live="polite">
+              <div className="pointer-events-none fixed inset-x-0 top-4 z-[80] flex justify-center px-4 sm:px-6 animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-300" role="status" aria-live="polite">
                 <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-green-200 bg-slate-950/95 px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(0,0,0,0.24)]">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-base text-green-400">
                     ✓
@@ -613,7 +613,7 @@ export default function AdminPage() {
             )}
 
             {tab === "products" && (
-              <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+              <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
                 <div className="space-y-6">
                   <div className="border border-neutral-200 bg-white">
                     <div className="flex flex-col gap-4 border-b border-neutral-200 p-6 sm:flex-row sm:items-end sm:justify-between">
@@ -639,14 +639,14 @@ export default function AdminPage() {
                         New product
                       </button>
                     </div>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full text-left text-sm">
+                    <div className="min-w-0 overflow-x-auto overscroll-x-contain">
+                      <table className="w-full text-left text-sm">
                         <thead className="border-b border-neutral-200 bg-[#f1f0ed] text-[10px] font-medium uppercase tracking-[0.12em] text-neutral-500">
                           <tr>
                             <th className="px-4 py-3">Name</th>
-                            <th className="px-4 py-3">Category</th>
+                            <th className="hidden px-4 py-3 sm:table-cell">Category</th>
                             <th className="px-4 py-3">Price</th>
-                            <th className="px-4 py-3">Stock</th>
+                            <th className="hidden px-4 py-3 md:table-cell">Stock</th>
                             <th className="px-4 py-3">Actions</th>
                           </tr>
                         </thead>
@@ -659,14 +659,14 @@ export default function AdminPage() {
                               <td className="px-4 py-4 font-medium text-neutral-950">
                                 {product.name}
                               </td>
-                              <td className="px-4 py-3 text-neutral-600">
+                              <td className="hidden px-4 py-3 text-neutral-600 sm:table-cell">
                                 {product.category?.name || product.categories?.name || "Uncategorised"}
                               </td>
                               <td className="px-4 py-3">
                                 {formatCurrency(product.price)}
                               </td>
-                              <td className="px-4 py-3">{product.stock}</td>
-                              <td className="px-4 py-3 space-x-2">
+                              <td className="hidden px-4 py-3 md:table-cell">{product.stock}</td>
+                              <td className="whitespace-nowrap px-4 py-3 space-x-2">
                                 <button
                                   type="button"
                                   className="border border-neutral-300 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.1em] text-neutral-700 hover:bg-neutral-100"
@@ -764,8 +764,8 @@ export default function AdminPage() {
             )}
 
             {isProductModalOpen && selectedProduct && (
-              <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-6">
-                <div className="flex max-h-[100dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-neutral-200 bg-white shadow-2xl sm:max-h-[calc(100dvh-3rem)] sm:rounded-none">
+              <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6">
+                <div className="flex max-h-[calc(100dvh-3rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl sm:max-h-[calc(100dvh-4rem)]">
                   <div className="flex shrink-0 items-start justify-between border-b border-neutral-200 px-4 py-4 sm:px-6 sm:py-5">
                     <div>
                       <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">
@@ -782,7 +782,7 @@ export default function AdminPage() {
                     </div>
                     <button
                       type="button"
-                      className="border border-neutral-300 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.1em] text-neutral-700 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="border border-red-300 bg-red-50 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={closeProductModal}
                       disabled={isSavingProduct}
                     >
@@ -1030,14 +1030,14 @@ export default function AdminPage() {
             )}
 
             {isCustomerModalOpen && selectedCustomer && (
-              <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-6">
-                <div className="w-full max-w-lg rounded-t-2xl border border-neutral-200 bg-white shadow-2xl sm:rounded-none">
+              <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6">
+                <div className="w-full max-w-lg rounded-2xl border border-neutral-200 bg-white shadow-2xl">
                   <div className="flex items-start justify-between border-b border-neutral-200 px-5 py-4">
                     <div>
                       <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">Customer editor</p>
                       <h2 className="mt-1 text-xl font-semibold text-neutral-950">Edit customer</h2>
                     </div>
-                    <button type="button" onClick={closeCustomerModal} disabled={isSavingCustomer} className="border border-neutral-300 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.1em] text-neutral-700 disabled:opacity-50">Close</button>
+                    <button type="button" onClick={closeCustomerModal} disabled={isSavingCustomer} className="border border-red-300 bg-red-50 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-red-700 hover:bg-red-100 disabled:opacity-50">Close</button>
                   </div>
                   <form onSubmit={updateCustomer} className="space-y-4 p-5">
                     {error && <div className="border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</div>}
