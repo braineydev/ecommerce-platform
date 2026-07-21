@@ -38,15 +38,15 @@ const updateCustomer = async (req, res) => {
       .from("profiles")
       .update({ full_name, phone, role })
       .eq("id", customer_id)
-      .select()
-      .single();
+      .select("id, full_name, phone, role, created_at");
 
     if (error) throw error;
-    if (!data) return res.status(404).json({ error: "Customer not found" });
+    const customer = Array.isArray(data) ? data[0] : data;
+    if (!customer) return res.status(404).json({ error: "Customer not found" });
 
     res
       .status(200)
-      .json({ message: "Customer updated successfully", customer: data });
+      .json({ message: "Customer updated successfully", customer });
   } catch (error) {
     console.error("Error updating customer:", error);
     res.status(500).json({ error: error.message });

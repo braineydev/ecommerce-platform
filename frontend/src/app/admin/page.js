@@ -105,6 +105,9 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
+  const [isSavingCustomer, setIsSavingCustomer] = useState(false);
 
   const apiUrl = "/api";
 
@@ -262,6 +265,7 @@ export default function AdminPage() {
   };
 
   const closeProductModal = () => {
+    if (isSavingProduct) return;
     setIsProductModalOpen(false);
     setSelectedProduct(null);
     setError("");
@@ -276,6 +280,13 @@ export default function AdminPage() {
     setSelectedCustomer(customer);
     setSuccess("");
     setError("");
+    setIsCustomerModalOpen(true);
+  };
+
+  const closeCustomerModal = () => {
+    if (isSavingCustomer) return;
+    setIsCustomerModalOpen(false);
+    setSelectedCustomer(null);
   };
 
   const uploadProductImage = async event => {
@@ -316,6 +327,7 @@ export default function AdminPage() {
 
   const saveProduct = async event => {
     event.preventDefault();
+    if (isSavingProduct) return;
     setError("");
     setSuccess("");
 
@@ -382,29 +394,34 @@ export default function AdminPage() {
       is_featured: Boolean(selectedProduct.is_featured),
     };
 
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setError(data.error || "Unable to save product");
-      return;
-    }
+    setIsSavingProduct(true);
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Unable to save product");
 
-    setSuccess(data.message || "Product added successfully");
-    setProducts(prev => {
-      const updated = prev.filter(item => item.id !== data.product.id);
-      return [data.product, ...updated];
-    });
-    setIsProductModalOpen(false);
-    resetProductForm();
+      setSuccess(data.message || "Product saved successfully");
+      setProducts(prev => {
+        const updated = prev.filter(item => item.id !== data.product.id);
+        return [data.product, ...updated];
+      });
+      setIsProductModalOpen(false);
+      resetProductForm();
+    } catch (err) {
+      setError(err.message || "Unable to save product");
+    } finally {
+      setIsSavingProduct(false);
+    }
   };
 
   const updateCustomer = async event => {
     event.preventDefault();
+    if (isSavingCustomer) return;
     setError("");
     setSuccess("");
 
@@ -413,22 +430,28 @@ export default function AdminPage() {
       return;
     }
 
-    const res = await fetch(`${apiUrl}/customers/${selectedCustomer.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(selectedCustomer),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setError(data.error || "Unable to update customer");
-      return;
-    }
+    setIsSavingCustomer(true);
+    try {
+      const res = await fetch(`${apiUrl}/customers/${selectedCustomer.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(selectedCustomer),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Unable to update customer");
 
-    setSuccess(data.message || "Customer updated successfully");
-    setCustomers(prev =>
-      prev.map(item => (item.id === data.customer.id ? data.customer : item)),
-    );
+      setSuccess(data.message || "Customer updated successfully");
+      setCustomers(prev =>
+        prev.map(item => (item.id === data.customer.id ? data.customer : item)),
+      );
+      setIsCustomerModalOpen(false);
+      setSelectedCustomer(null);
+    } catch (err) {
+      setError(err.message || "Unable to update customer");
+    } finally {
+      setIsSavingCustomer(false);
+    }
   };
 
   const deleteCustomer = async () => {
@@ -530,7 +553,7 @@ export default function AdminPage() {
               </div>
             )}
             {success && (
-              <div className="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-4 sm:px-6">
+              <div className="pointer-events-none fixed inset-x-0 top-4 z-[80] flex justify-center px-4 sm:px-6" role="status" aria-live="polite">
                 <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-green-200 bg-slate-950/95 px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(0,0,0,0.24)]">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-base text-green-400">
                     ✓
@@ -741,9 +764,9 @@ export default function AdminPage() {
             )}
 
             {isProductModalOpen && selectedProduct && (
-              <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 px-3 py-3 sm:items-center sm:px-6">
-                <div className="w-full max-w-2xl overflow-hidden border border-neutral-200 bg-white shadow-2xl">
-                  <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-5 sm:px-6">
+              <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-6">
+                <div className="flex max-h-[100dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-neutral-200 bg-white shadow-2xl sm:max-h-[calc(100dvh-3rem)] sm:rounded-none">
+                  <div className="flex shrink-0 items-start justify-between border-b border-neutral-200 px-4 py-4 sm:px-6 sm:py-5">
                     <div>
                       <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">
                         Catalogue editor
@@ -759,14 +782,20 @@ export default function AdminPage() {
                     </div>
                     <button
                       type="button"
-                      className="border border-neutral-300 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.1em] text-neutral-700 hover:bg-neutral-100"
+                      className="border border-neutral-300 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.1em] text-neutral-700 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={closeProductModal}
+                      disabled={isSavingProduct}
                     >
                       Close
                     </button>
                   </div>
-                  <div className="max-h-[75vh] overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
-                    <form onSubmit={saveProduct} className="space-y-6">
+                  <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
+                    <form onSubmit={saveProduct} className="space-y-5 pb-4 sm:space-y-6">
+                      {error && (
+                        <div className="border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+                          {error}
+                        </div>
+                      )}
                       <div>
                         <label className="text-[10px] font-medium uppercase tracking-[0.14em] text-neutral-600">
                           Name
@@ -787,7 +816,7 @@ export default function AdminPage() {
                         <legend className="text-[10px] font-medium uppercase tracking-[0.14em] text-neutral-600">
                           Category
                         </legend>
-                        <div className="mt-3 grid grid-cols-3 gap-2">
+                        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
                           {categories.map((category, categoryIndex) => {
                             const selected =
                               String(selectedProduct.category_id) ===
@@ -807,7 +836,7 @@ export default function AdminPage() {
                                     category_id: category.id,
                                   }))
                                 }
-                                className={`min-h-20 border px-3 text-left text-[11px] font-medium uppercase tracking-[0.1em] transition ${selected ? "border-neutral-950 bg-[#171716] text-white" : "border-neutral-300 bg-white text-neutral-700 hover:border-neutral-950"}`}
+                                className={`min-h-12 border px-3 py-3 text-left text-[11px] font-medium uppercase tracking-[0.1em] transition sm:min-h-20 ${selected ? "border-neutral-950 bg-[#171716] text-white" : "border-neutral-300 bg-white text-neutral-700 hover:border-neutral-950"}`}
                                 aria-pressed={selected}
                               >
                                 {category.name}
@@ -829,11 +858,17 @@ export default function AdminPage() {
                           </label>
                           <input
                             type="number"
+                            min="0"
+                            step="0.01"
                             value={selectedProduct.initial_price}
                             onChange={e =>
                               setSelectedProduct(prev => ({
                                 ...prev,
                                 initial_price: Number(e.target.value),
+                                discounted_price: Math.min(
+                                  Number(prev.discounted_price || 0),
+                                  Number(e.target.value || 0),
+                                ),
                               }))
                             }
                             className="mt-2 w-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900"
@@ -845,11 +880,17 @@ export default function AdminPage() {
                           </label>
                           <input
                             type="number"
+                            min="0"
+                            step="0.01"
+                            max={selectedProduct.initial_price || 0}
                             value={selectedProduct.discounted_price}
                             onChange={e =>
                               setSelectedProduct(prev => ({
                                 ...prev,
-                                discounted_price: Number(e.target.value),
+                                discounted_price: Math.min(
+                                  Number(e.target.value || 0),
+                                  Number(prev.initial_price || 0),
+                                ),
                               }))
                             }
                             className="mt-2 w-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900"
@@ -857,6 +898,9 @@ export default function AdminPage() {
                           />
                         </div>
                       </div>
+                      <p className="-mt-2 text-xs text-neutral-500">
+                        The discounted price is automatically kept at or below the initial price.
+                      </p>
                       <div>
                         <label className="text-[10px] font-medium uppercase tracking-[0.14em] text-neutral-600">
                           Product image
@@ -891,7 +935,9 @@ export default function AdminPage() {
                           Stock
                         </label>
                         <input
-                          type="number"
+                            type="number"
+                            min="0"
+                            step="1"
                           value={selectedProduct.stock}
                           onChange={e =>
                             setSelectedProduct(prev => ({
@@ -920,9 +966,10 @@ export default function AdminPage() {
                       </div>
                       <button
                         type="submit"
-                        className="w-full bg-[#171716] px-5 py-4 text-[11px] font-medium uppercase tracking-[0.13em] text-white hover:bg-neutral-700"
+                        disabled={isSavingProduct || isUploadingImage}
+                        className="sticky bottom-0 w-full bg-[#171716] px-5 py-4 text-[11px] font-medium uppercase tracking-[0.13em] text-white shadow-[0_-8px_20px_rgba(255,255,255,0.92)] hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-400"
                       >
-                        Save product
+                        {isSavingProduct ? "Saving product…" : "Save product"}
                       </button>
                     </form>
                   </div>
@@ -974,80 +1021,48 @@ export default function AdminPage() {
                 </div>
 
                 <div className="rounded-4xl border border-gray-100 bg-white p-6 shadow-sm">
-                  <h2 className="text-xl font-semibold text-gray-900">
-                    Customer details
-                  </h2>
-                  {!selectedCustomer ? (
-                    <p className="mt-3 text-sm text-gray-500">
-                      Select a customer to edit.
-                    </p>
-                  ) : (
-                    <form onSubmit={updateCustomer} className="mt-5 space-y-4">
-                      <div>
-                        <label className="text-sm font-medium text-gray-700">
-                          Name
-                        </label>
-                        <input
-                          value={selectedCustomer.full_name}
-                          onChange={e =>
-                            setSelectedCustomer(prev => ({
-                              ...prev,
-                              full_name: e.target.value,
-                            }))
-                          }
-                          className="mt-2 w-full rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-700">
-                          Phone
-                        </label>
-                        <input
-                          value={selectedCustomer.phone || ""}
-                          onChange={e =>
-                            setSelectedCustomer(prev => ({
-                              ...prev,
-                              phone: e.target.value,
-                            }))
-                          }
-                          className="mt-2 w-full rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-700">
-                          Role
-                        </label>
-                        <select
-                          value={selectedCustomer.role || "customer"}
-                          onChange={e =>
-                            setSelectedCustomer(prev => ({
-                              ...prev,
-                              role: e.target.value,
-                            }))
-                          }
-                          className="mt-2 w-full rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900"
-                        >
-                          <option value="customer">Customer</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      </div>
-                      <button
-                        type="submit"
-                        className="w-full rounded-full bg-black px-5 py-3 text-sm font-semibold text-white hover:bg-gray-900"
-                      >
-                        Save customer
-                      </button>
-                      {selectedCustomer.role !== "admin" && (
-                        <button
-                          type="button"
-                          onClick={deleteCustomer}
-                          className="w-full border border-red-200 px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-50"
-                        >
-                          Delete customer account
-                        </button>
-                      )}
-                    </form>
-                  )}
+                  <h2 className="text-xl font-semibold text-gray-900">Customer editor</h2>
+                  <p className="mt-3 text-sm leading-6 text-gray-500">
+                    Select Edit on a customer to review and update their details in a focused, mobile-friendly dialog.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {isCustomerModalOpen && selectedCustomer && (
+              <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-6">
+                <div className="w-full max-w-lg rounded-t-2xl border border-neutral-200 bg-white shadow-2xl sm:rounded-none">
+                  <div className="flex items-start justify-between border-b border-neutral-200 px-5 py-4">
+                    <div>
+                      <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">Customer editor</p>
+                      <h2 className="mt-1 text-xl font-semibold text-neutral-950">Edit customer</h2>
+                    </div>
+                    <button type="button" onClick={closeCustomerModal} disabled={isSavingCustomer} className="border border-neutral-300 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.1em] text-neutral-700 disabled:opacity-50">Close</button>
+                  </div>
+                  <form onSubmit={updateCustomer} className="space-y-4 p-5">
+                    {error && <div className="border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</div>}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Name</label>
+                      <input required value={selectedCustomer.full_name || ""} onChange={e => setSelectedCustomer(prev => ({ ...prev, full_name: e.target.value }))} className="mt-2 w-full border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Phone</label>
+                      <input value={selectedCustomer.phone || ""} onChange={e => setSelectedCustomer(prev => ({ ...prev, phone: e.target.value }))} className="mt-2 w-full border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Role</label>
+                      <select value={selectedCustomer.role || "customer"} onChange={e => setSelectedCustomer(prev => ({ ...prev, role: e.target.value }))} className="mt-2 w-full border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900">
+                        <option value="customer">Customer</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </div>
+                    <button type="submit" disabled={isSavingCustomer} className="w-full bg-[#171716] px-5 py-3 text-[11px] font-medium uppercase tracking-[0.13em] text-white hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-400">
+                      {isSavingCustomer ? "Saving customer…" : "Save customer"}
+                    </button>
+                    {selectedCustomer.role !== "admin" && (
+                      <button type="button" onClick={deleteCustomer} disabled={isSavingCustomer} className="w-full border border-red-200 px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-50">Delete customer account</button>
+                    )}
+                  </form>
                 </div>
               </div>
             )}
