@@ -22,7 +22,7 @@ export default function WhatsAppHelp() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-40">
+    <div className="fixed bottom-10 right-6 z-40 sm:bottom-12">
       {isOpen && (
         <div className="absolute bottom-20 right-0 w-96 max-w-[calc(100vw-2rem)] rounded-3xl border border-neutral-200 bg-white p-6 shadow-[0_22px_70px_rgba(15,23,42,0.18)] animate-in fade-in slide-in-from-bottom-4 duration-300">
           <div className="flex items-start justify-between gap-4 mb-5">

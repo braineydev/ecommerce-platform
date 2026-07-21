@@ -10,8 +10,6 @@ const TABS = [
   { id: "orders", label: "Orders" },
 ];
 
-const STORE_CATEGORY_SLUGS = ["phones", "appliances", "accessories"];
-
 const formatCurrency = value => `Ksh. ${Number(value || 0).toLocaleString()}`;
 
 const slugify = value =>
@@ -101,6 +99,7 @@ export default function AdminPage() {
   const [categories, setCategories] = useState([]);
   const [statusUpdate, setStatusUpdate] = useState("");
   const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
   const [success, setSuccess] = useState("");
   const [categoriesError, setCategoriesError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -198,12 +197,12 @@ export default function AdminPage() {
         // Show error only if all critical data failed
         const failed = results.filter(r => r.status === "rejected");
         if (failed.length === results.length) {
-          setError("Unable to load admin data");
+          setLoadError("Unable to load admin data");
         } else if (failed.length > 0) {
           console.warn(`${failed.length} data source(s) failed to load`);
         }
       } catch (err) {
-        setError(err.message || "Unable to load admin data");
+        setLoadError(err.message || "Unable to load admin data");
       } finally {
         setIsLoading(false);
       }
@@ -211,7 +210,7 @@ export default function AdminPage() {
 
     if (!isAuthLoading && user) {
       if (user.role !== "admin") {
-        setError("Access denied: Admins only.");
+        setLoadError("Access denied: Admins only.");
         setIsLoading(false);
         return;
       }
@@ -518,12 +517,18 @@ export default function AdminPage() {
           <div className="border border-neutral-200 bg-[#f1f0ed] p-8 text-sm text-neutral-500">
             Loading admin dashboard…
           </div>
-        ) : error ? (
+        ) : loadError ? (
           <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-600">
-            {error}
+            {loadError}
           </div>
         ) : (
           <>
+            {error && (
+              <div className="mb-6 flex items-center justify-between gap-3 border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">
+                <span>{error}</span>
+                <button type="button" onClick={() => setError("")} className="text-xs font-semibold uppercase tracking-wide">Dismiss</button>
+              </div>
+            )}
             {success && (
               <div className="pointer-events-none fixed inset-x-0 top-4 z-50 flex justify-center px-4 sm:px-6">
                 <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-green-200 bg-slate-950/95 px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(0,0,0,0.24)]">
@@ -616,6 +621,7 @@ export default function AdminPage() {
                         <thead className="border-b border-neutral-200 bg-[#f1f0ed] text-[10px] font-medium uppercase tracking-[0.12em] text-neutral-500">
                           <tr>
                             <th className="px-4 py-3">Name</th>
+                            <th className="px-4 py-3">Category</th>
                             <th className="px-4 py-3">Price</th>
                             <th className="px-4 py-3">Stock</th>
                             <th className="px-4 py-3">Actions</th>
@@ -629,6 +635,9 @@ export default function AdminPage() {
                             >
                               <td className="px-4 py-4 font-medium text-neutral-950">
                                 {product.name}
+                              </td>
+                              <td className="px-4 py-3 text-neutral-600">
+                                {product.category?.name || product.categories?.name || "Uncategorised"}
                               </td>
                               <td className="px-4 py-3">
                                 {formatCurrency(product.price)}

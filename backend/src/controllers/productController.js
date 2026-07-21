@@ -1,11 +1,6 @@
 const supabase = require("../config/supabase");
 
 const PRODUCT_SELECT = "*, categories(id, name, slug)";
-const STORE_CATEGORIES = [
-  { id: 1, name: "Phones", slug: "phones" },
-  { id: 2, name: "Appliances", slug: "appliances" },
-  { id: 3, name: "Accessories", slug: "accessories" },
-];
 
 const normalizeProduct = product => {
   if (!product) return product;
@@ -57,13 +52,9 @@ exports.getCategories = async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
 
-  const filtered = data.filter(category =>
-    STORE_CATEGORIES.some(item => item.slug === category.slug),
-  );
-
-  res.status(200).json({
-    data: filtered.length > 0 ? filtered : STORE_CATEGORIES,
-  });
+  // These IDs are foreign keys. Never substitute display-only, hard-coded IDs
+  // here: doing so makes the admin form submit category IDs that do not exist.
+  res.status(200).json({ data });
 };
 
 // Get products with optional search, category, and featured filters

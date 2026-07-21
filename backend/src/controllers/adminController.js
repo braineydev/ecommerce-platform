@@ -1,5 +1,7 @@
 const supabase = require("../config/supabase");
 
+const PRODUCT_SELECT = "*, categories(id, name, slug)";
+
 const slugify = value =>
   String(value || "")
     .toLowerCase()
@@ -44,6 +46,17 @@ const validateProductValues = ({
   return null;
 };
 
+const categoryExists = async categoryId => {
+  const { data, error } = await supabase
+    .from("categories")
+    .select("id")
+    .eq("id", categoryId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return Boolean(data);
+};
+
 // Add a New Product
 exports.addProduct = async (req, res) => {
   const {
@@ -79,6 +92,16 @@ exports.addProduct = async (req, res) => {
   if (validationError) return res.status(400).json({ error: validationError });
 
   const numericCategoryId = Number(category_id);
+  try {
+    if (!(await categoryExists(numericCategoryId))) {
+      return res.status(400).json({
+        error: "The selected category no longer exists. Refresh the page and choose a category from the list.",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
   const { data, error } = await supabase
     .from("products")
     .insert([
@@ -99,7 +122,7 @@ exports.addProduct = async (req, res) => {
         is_featured: Boolean(is_featured),
       },
     ])
-    .select()
+    .select(PRODUCT_SELECT)
     .single();
 
   if (error) {
@@ -157,6 +180,16 @@ exports.updateProduct = async (req, res) => {
   if (validationError) return res.status(400).json({ error: validationError });
 
   const numericCategoryId = Number(category_id);
+  try {
+    if (!(await categoryExists(numericCategoryId))) {
+      return res.status(400).json({
+        error: "The selected category no longer exists. Refresh the page and choose a category from the list.",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
   const { data, error } = await supabase
     .from("products")
     .update({
@@ -176,7 +209,7 @@ exports.updateProduct = async (req, res) => {
       is_featured: Boolean(is_featured),
     })
     .eq("id", product_id)
-    .select()
+    .select(PRODUCT_SELECT)
     .maybeSingle();
 
   if (error)

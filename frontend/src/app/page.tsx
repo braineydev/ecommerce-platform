@@ -55,6 +55,12 @@ type Product = {
   category_name?: string;
 };
 
+type Category = {
+  id: string | number;
+  name: string;
+  slug: string;
+};
+
 export default function Storefront() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-[#fcfcfb]" />}>
@@ -66,6 +72,7 @@ export default function Storefront() {
 function StorefrontContent() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [wishlist, setWishlist] = useState<Array<string | number>>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -107,8 +114,22 @@ function StorefrontContent() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_PROXY_PATH}/products/categories`, {
+        cache: "no-store",
+      });
+      const data = await readApiJson<{ data?: Category[] }>(res);
+      setCategories(Array.isArray(data.data) ? data.data : []);
+    } catch (error) {
+      // Products remain browsable if the optional category menu is unavailable.
+      console.error("Error fetching categories:", error);
+    }
+  };
+
   useEffect(() => {
     void fetchProducts();
+    void fetchCategories();
   }, []);
 
   useEffect(() => {
@@ -240,9 +261,10 @@ function StorefrontContent() {
 
   const categoryOptions = [
     { label: "All", value: null },
-    { label: "Phones", value: "phones" },
-    { label: "Appliances", value: "appliances" },
-    { label: "Accessories", value: "accessories" },
+    ...categories.map(category => ({
+      label: category.name,
+      value: category.slug,
+    })),
   ];
 
   return (
