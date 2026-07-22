@@ -97,7 +97,6 @@ export default function AdminPage() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [categories, setCategories] = useState([]);
-  const [statusUpdate, setStatusUpdate] = useState("");
   const [error, setError] = useState("");
   const [loadError, setLoadError] = useState("");
   const [success, setSuccess] = useState("");
@@ -212,15 +211,12 @@ export default function AdminPage() {
     };
 
     if (!isAuthLoading && user) {
-      if (user.role !== "admin") {
-        setLoadError("Access denied: Admins only.");
-        setIsLoading(false);
-        return;
-      }
+      if (user.role !== "admin") return;
       load();
     }
-    if (!isAuthLoading && !user) setIsLoading(false);
   }, [isAuthLoading, user]);
+
+  const accessDenied = !isAuthLoading && (!user || user.role !== "admin");
 
   const dashboardItems = useMemo(() => {
     if (!analytics) return [];
@@ -374,7 +370,9 @@ export default function AdminPage() {
 
     const payload = {
       name: normalizedName,
-      category_id: Number(normalizedCategoryId),
+      // Preserve UUID category IDs as well as numeric IDs. PostgreSQL performs
+      // the appropriate conversion for the configured category column.
+      category_id: normalizedCategoryId,
       description: selectedProduct.description || null,
       brand:
         typeof selectedProduct.brand === "string"
@@ -536,7 +534,11 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {isLoading ? (
+        {accessDenied ? (
+          <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-600">
+            Access denied: Admins only.
+          </div>
+        ) : isLoading ? (
           <div className="border border-neutral-200 bg-[#f1f0ed] p-8 text-sm text-neutral-500">
             Loading admin dashboard…
           </div>

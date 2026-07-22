@@ -57,6 +57,35 @@ const categoryExists = async categoryId => {
   return Boolean(data);
 };
 
+const databaseWriteError = (error, resource) => {
+  if (error?.code === "42501") {
+    return `Database permissions rejected this ${resource} change. Set Render's SUPABASE_SERVICE_ROLE_KEY to the server-only Supabase service_role key, then redeploy.`;
+  }
+  if (error?.code === "23503") {
+    return "The selected category is not valid in the database. Refresh the page, select a category again, and retry.";
+  }
+  return error?.message || `Unable to save ${resource}`;
+};
+
+const normalizeProduct = product => {
+  if (!product) return product;
+  const categoryCandidate = product.categories || product.category || null;
+  const category = Array.isArray(categoryCandidate)
+    ? categoryCandidate[0]
+    : categoryCandidate;
+
+  return {
+    ...product,
+    category,
+    categories: category,
+    category_id: category?.id ?? product.category_id ?? null,
+    price: Number(product.discounted_price ?? product.price ?? 0),
+    initial_price: Number(product.initial_price ?? product.price ?? 0),
+    discounted_price: Number(product.discounted_price ?? product.price ?? 0),
+    stock: Number(product.stock ?? 0),
+  };
+};
+
 // Add a New Product
 exports.addProduct = async (req, res) => {
   const {
@@ -91,9 +120,9 @@ exports.addProduct = async (req, res) => {
   });
   if (validationError) return res.status(400).json({ error: validationError });
 
-  const numericCategoryId = Number(category_id);
+  const categoryId = String(category_id).trim();
   try {
-    if (!(await categoryExists(numericCategoryId))) {
+    if (!(await categoryExists(categoryId))) {
       return res.status(400).json({
         error: "The selected category no longer exists. Refresh the page and choose a category from the list.",
       });
@@ -106,7 +135,7 @@ exports.addProduct = async (req, res) => {
     .from("products")
     .insert([
       {
-        category_id: numericCategoryId,
+        category_id: categoryId,
         name,
         brand: typeof brand === "string" ? brand.trim().slice(0, 80) : null,
         slug: slugify(slug || name),
@@ -127,7 +156,7 @@ exports.addProduct = async (req, res) => {
 
   if (error) {
     console.error("Admin addProduct failed:", {
-      category_id: numericCategoryId,
+      category_id: categoryId,
       error: error.message,
       details: error.details,
       hint: error.hint,
@@ -136,12 +165,12 @@ exports.addProduct = async (req, res) => {
       error:
         error.code === "23505"
           ? "This URL slug is already in use"
-          : error.message,
+          : databaseWriteError(error, "product"),
     });
   }
   res
     .status(201)
-    .json({ message: "Product added successfully", product: data });
+    .json({ message: "Product added successfully", product: normalizeProduct(data) });
 };
 
 // Update an Existing Product
@@ -179,9 +208,9 @@ exports.updateProduct = async (req, res) => {
   });
   if (validationError) return res.status(400).json({ error: validationError });
 
-  const numericCategoryId = Number(category_id);
+  const categoryId = String(category_id).trim();
   try {
-    if (!(await categoryExists(numericCategoryId))) {
+    if (!(await categoryExists(categoryId))) {
       return res.status(400).json({
         error: "The selected category no longer exists. Refresh the page and choose a category from the list.",
       });
@@ -193,7 +222,7 @@ exports.updateProduct = async (req, res) => {
   const { data, error } = await supabase
     .from("products")
     .update({
-      category_id: numericCategoryId,
+      category_id: categoryId,
       name,
       brand: typeof brand === "string" ? brand.trim().slice(0, 80) : null,
       slug: slugify(slug || name),
@@ -217,13 +246,13 @@ exports.updateProduct = async (req, res) => {
       error:
         error.code === "23505"
           ? "This URL slug is already in use"
-          : error.message,
+          : databaseWriteError(error, "product"),
     });
   if (!data) return res.status(404).json({ error: "Product not found" });
 
   res
     .status(200)
-    .json({ message: "Product updated successfully", product: data });
+    .json({ message: "Product updated successfully", product: normalizeProduct(data) });
 };
 
 // Delete a Product
@@ -235,10 +264,11 @@ exports.deleteProduct = async (req, res) => {
     .delete()
     .eq("id", product_id)
     .select("id")
-    .single();
+    ;
 
-  if (error) return res.status(500).json({ error: error.message });
-  if (!data) return res.status(404).json({ error: "Product not found" });
+  if (error) return res.status(500).json({ error: databaseWriteError(error, "product") });
+  const product = Array.isArray(data) ? data[0] : data;
+  if (!product) return res.status(404).json({ error: "Product not found or cannot be deleted" });
 
   res.status(200).json({ message: "Product deleted successfully" });
 };
@@ -287,5 +317,6 @@ exports.updateOrderStatus = async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
   const order = Array.isArray(data) ? data[0] : data;
+  if (!order) return res.status(404).json({ error: "Order not found" });
   res.status(200).json({ message: `Order marked as ${status}`, order });
 };
