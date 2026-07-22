@@ -11,6 +11,17 @@ if (!supabaseUrl || !supabaseKey) {
   process.exit(1);
 }
 
+// Current Supabase projects can use opaque API keys. A publishable key is the
+// modern equivalent of the legacy anon JWT: it can read rows allowed by RLS,
+// while inserts/updates may be silently filtered. Reject it at startup rather
+// than letting an admin write be misreported as a missing product.
+if (supabaseKey.startsWith("sb_publishable_")) {
+  console.error(
+    "SUPABASE_SERVICE_ROLE_KEY is a publishable key. Configure Render with the server-only sb_secret_ key (or legacy service_role JWT).",
+  );
+  process.exit(1);
+}
+
 // Legacy Supabase keys are JWTs. Refuse the anonymous/publishable JWT here:
 // using it for this server makes RLS hide products and profiles on writes,
 // which misleadingly surfaces as "Product/Customer not found".
