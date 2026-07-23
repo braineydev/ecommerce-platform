@@ -1,5 +1,42 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useCart } from "../context/CartContext";
+
+export default function CartNotice() {
+  const router = useRouter();
+  const { cartNotice, dismissCartNotice, getCartCount } = useCart();
+  const count = getCartCount();
+
+  useEffect(() => {
+    if (!cartNotice) return;
+    const t = setTimeout(() => dismissCartNotice(), 4000);
+    return () => clearTimeout(t);
+  }, [cartNotice, dismissCartNotice]);
+
+  if (!cartNotice) return null;
+
+  return (
+    <div className="fixed right-4 bottom-36 z-50">
+      <button
+        onClick={() => {
+          dismissCartNotice();
+          router.push("/cart");
+        }}
+        className="flex items-center gap-3 rounded-2xl bg-red-600 px-4 py-3 text-white shadow-[0_18px_45px_rgba(220,38,38,0.18)] hover:opacity-95 focus:outline-none"
+        aria-label="View cart"
+      >
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-red-600 font-semibold">
+          {count}
+        </div>
+        <div className="text-sm font-medium">View cart</div>
+      </button>
+    </div>
+  );
+}
+"use client";
+
 import { ShoppingBag, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
