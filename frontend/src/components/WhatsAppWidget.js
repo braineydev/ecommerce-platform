@@ -12,7 +12,7 @@ export default function WhatsAppWidget({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed z-50 right-4 bottom-24 min-h-14 min-w-14 rounded-full bg-green-500 p-4 text-white shadow-[0_20px_55px_rgba(16,185,129,0.32)] transition duration-200 ease-in-out hover:scale-[1.05] flex items-center justify-center"
+      className="fixed z-50 right-5 bottom-20 min-h-14 min-w-14 rounded-full bg-green-500 p-4 text-white shadow-[0_20px_55px_rgba(16,185,129,0.32)] flex items-center justify-center"
       title="Chat on WhatsApp"
     >
       {/* WhatsApp icon */}
