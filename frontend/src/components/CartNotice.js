@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useCart } from "../context/CartContext";
 
 export default function CartNotice() {
@@ -18,7 +18,7 @@ export default function CartNotice() {
   if (!cartNotice) return null;
 
   return (
-    <div className="fixed right-4 bottom-36 z-50">
+    <div className="fixed right-4 bottom-36 z-50 animate-in slide-in-from-right-4 duration-300">
       <button
         onClick={() => {
           dismissCartNotice();
@@ -30,7 +30,12 @@ export default function CartNotice() {
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-red-600 font-semibold">
           {count}
         </div>
-        <div className="text-sm font-medium">View cart</div>
+        <div className="flex flex-col text-left">
+          <div className="text-sm font-medium">View cart</div>
+          {cartNotice?.productName && (
+            <div className="text-xs opacity-90">Added: {cartNotice.productName}</div>
+          )}
+        </div>
       </button>
     </div>
   );
@@ -39,8 +44,7 @@ export default function CartNotice() {
 
 import { ShoppingBag, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { useCart } from "../context/CartContext";
+import { useMemo, useState } from "react";
 
 export default function CartNotice() {
   const { cartNotice, dismissCartNotice, cart } = useCart();
