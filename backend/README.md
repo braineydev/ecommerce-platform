@@ -48,3 +48,7 @@ Use the same `npm run migrate` command in your CI pipeline prior to deploying th
 - Set `SUPABASE_SERVICE_ROLE_KEY` in `backend/.env`. Do not use `SUPABASE_KEY` or any `NEXT_PUBLIC_` variable for this key.
 - Call `decrement_stock` only from server-side code (the backend already calls it). The migration includes a `REVOKE EXECUTE` step to remove anon access — keep this in migrations.
 - For production high-concurrency needs consider DB-level monitoring and backups before applying migrations.
+
+## Provider setup
+
+See `PROVIDER_SETUP.md` for step-by-step instructions to enable Google OAuth and SMS (Twilio) for authentication, and the exact environment variables to set on Render or Vercel.

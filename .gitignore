@@ -21,3 +21,5 @@ nul
 frontend/.next/
 frontend/out/
 backend/dist/
+.vercel
+.env*

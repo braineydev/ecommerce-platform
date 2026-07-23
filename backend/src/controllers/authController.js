@@ -109,7 +109,10 @@ exports.signup = async (req, res) => {
     },
   });
 
-  if (error) return res.status(400).json({ error: "Unable to create account" });
+  if (error) {
+    console.error("SignUp error:", error);
+    return res.status(400).json({ error: "Unable to create account" });
+  }
 
   const user = await buildAuthenticatedUser(data.user);
   setSessionCookie(res, data.session);
@@ -137,8 +140,10 @@ exports.requestPhoneOtp = async (req, res) => {
     phone,
     options: { shouldCreateUser: true, data: { full_name, phone } },
   });
-  if (error)
+  if (error) {
+    console.error("Phone OTP request error:", error);
     return res.status(400).json({ error: "Unable to send verification code" });
+  }
   return res.status(200).json({ message: "Verification code sent" });
 };
 
@@ -155,10 +160,12 @@ exports.verifyPhoneOtp = async (req, res) => {
     token,
     type: "sms",
   });
-  if (error || !data.session)
+  if (error || !data.session) {
+    console.error("Verify OTP error:", error, data);
     return res
       .status(400)
       .json({ error: "The verification code is invalid or expired" });
+  }
   const user = await buildAuthenticatedUser(data.user);
   setSessionCookie(res, data.session);
   return res.status(200).json({ message: "Phone verified", user });
@@ -172,8 +179,10 @@ exports.startGoogleSignIn = async (req, res) => {
     provider: "google",
     options: { redirectTo },
   });
-  if (error || !data?.url)
+  if (error || !data?.url) {
+    console.error("Google sign-in error:", error, data);
     return res.status(400).json({ error: "Google sign-in is not configured" });
+  }
   return res.status(200).json({ url: data.url });
 };
 

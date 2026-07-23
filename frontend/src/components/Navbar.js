@@ -146,11 +146,12 @@ export default function Navbar() {
               <div className="flex items-center">
                 <button
                   onClick={logout}
-                  className="hidden h-10 w-8 items-center justify-center text-neutral-400 transition-colors hover:text-neutral-950 sm:inline-flex"
+                  className="inline-flex h-10 w-10 items-center justify-center text-neutral-500 transition-colors hover:text-neutral-950"
                   title="Log out"
                   aria-label="Log out"
                 >
                   <LogOut size={18} strokeWidth={1.7} />
+                  <span className="sr-only">Log out</span>
                 </button>
               </div>
             ) : (
