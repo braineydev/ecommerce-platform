@@ -9,12 +9,12 @@ export default function CartWidget() {
   const count = getCartCount();
 
   return (
-    <div className="fixed right-4 bottom-32 z-50">
+    <div className="fixed right-5 bottom-48 z-50">
       <Link
         href="/cart"
         aria-label="Open cart"
         title="Cart"
-        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 text-neutral-800 shadow-[0_20px_55px_rgba(15,23,42,0.08)] transition duration-200 ease-in-out hover:scale-[1.05]"
+        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-black p-3 text-white shadow-lg transition duration-200 ease-in-out hover:scale-[1.05]"
       >
         <ShoppingCart size={20} />
         {count > 0 && (
