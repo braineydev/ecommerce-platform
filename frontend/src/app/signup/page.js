@@ -101,20 +101,23 @@ export default function SignupPage() {
           </button>
         </form>
 
+        {/* Google signup is temporarily hidden until provider setup is sorted. */}
         <div className="my-6 flex items-center gap-3 text-xs text-gray-400">
           <span className="h-px flex-1 bg-gray-200" />
           or
           <span className="h-px flex-1 bg-gray-200" />
         </div>
-        <button
-          type="button"
-          onClick={() =>
-            startGoogleSignIn().catch(err => setError(err.message))
-          }
-          className="w-full border border-neutral-300 px-6 py-3.5 text-[11px] font-medium uppercase tracking-[0.13em] text-neutral-800 hover:bg-neutral-50"
-        >
-          Continue with Google
-        </button>
+        <div className="hidden">
+          <button
+            type="button"
+            onClick={() =>
+              startGoogleSignIn().catch(err => setError(err.message))
+            }
+            className="w-full border border-neutral-300 px-6 py-3.5 text-[11px] font-medium uppercase tracking-[0.13em] text-neutral-800 hover:bg-neutral-50"
+          >
+            Continue with Google
+          </button>
+        </div>
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Already have an account?{" "}
