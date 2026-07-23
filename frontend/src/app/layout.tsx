@@ -4,6 +4,7 @@ import CartNotice from "../components/CartNotice";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import WhatsAppHelp from "../components/WhatsAppHelp";
+import CartWidget from "../components/CartWidget";
 import { AuthProvider } from "../context/AuthContext";
 import { CartProvider } from "../context/CartContext";
 import "./globals.css";
@@ -59,6 +60,7 @@ export default function RootLayout({
           <CartProvider>
             <Navbar />
             <CartNotice />
+            <CartWidget />
             <WhatsAppHelp />
             {children}
             <Footer />
