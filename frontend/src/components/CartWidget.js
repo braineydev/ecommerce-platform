@@ -10,7 +10,7 @@ export default function CartWidget() {
 
   return (
     <div
-      className="fixed right-5 z-50"
+      className="fixed right-5 z-50 hidden"
       style={{ top: "66.666%", transform: "translateY(-50%)" }}
     >
       <Link
