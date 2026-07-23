@@ -68,33 +68,6 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  const requestPhoneOtp = async ({ phone, full_name }) => {
-    const apiUrl = API_PROXY_PATH;
-    const response = await fetch(`${apiUrl}/auth/phone-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ phone, full_name }),
-    });
-    const data = await readApiJson(response);
-    if (!response.ok) throw new Error(data.error || "Unable to send code");
-    return data;
-  };
-
-  const verifyPhoneOtp = async ({ phone, token }) => {
-    const apiUrl = API_PROXY_PATH;
-    const response = await fetch(`${apiUrl}/auth/phone-otp/verify`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ phone, token }),
-    });
-    const data = await readApiJson(response);
-    if (!response.ok) throw new Error(data.error || "Unable to verify code");
-    setUser(data.user);
-    return data;
-  };
-
   const startGoogleSignIn = async () => {
     const apiUrl = API_PROXY_PATH;
     const response = await fetch(`${apiUrl}/auth/social/google`, {
@@ -112,8 +85,6 @@ export function AuthProvider({ children }) {
       isLoading,
       login,
       signup,
-      requestPhoneOtp,
-      verifyPhoneOtp,
       startGoogleSignIn,
       logout,
     }),

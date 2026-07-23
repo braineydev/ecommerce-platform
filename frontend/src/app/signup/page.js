@@ -4,23 +4,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { isE164, normalizePhone } from "../../lib/phone";
 
 export default function SignupPage() {
   const router = useRouter();
-  const { signup, requestPhoneOtp, verifyPhoneOtp, startGoogleSignIn } =
-    useAuth();
+  const { signup, startGoogleSignIn } = useAuth();
   const [form, setForm] = useState({
     email: "",
     password: "",
     full_name: "",
-    phone: "",
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [mode, setMode] = useState("email");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState("");
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -32,26 +26,7 @@ export default function SignupPage() {
     setIsSubmitting(true);
 
     try {
-      if (mode === "email") {
-        await signup(form);
-      } else {
-        // Phone flow
-        const normalized = normalizePhone(form.phone);
-        if (!isE164(normalized))
-          throw new Error(
-            "Enter phone in international E.164 format, e.g. +2547...",
-          );
-        if (!otpSent) {
-          await requestPhoneOtp({
-            phone: normalized,
-            full_name: form.full_name,
-          });
-          setOtpSent(true);
-          return;
-        } else {
-          await verifyPhoneOtp({ phone: normalized, token: otp });
-        }
-      }
+      await signup(form);
       router.push("/");
     } catch (err) {
       setError(err.message || "Unable to create account");
@@ -73,25 +48,6 @@ export default function SignupPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-2 rounded-2xl bg-gray-100 p-1 text-sm font-semibold">
-            <button
-              type="button"
-              onClick={() => {
-                setMode("email");
-                setOtpSent(false);
-              }}
-              className={`rounded-xl px-3 py-2 ${mode === "email" ? "bg-white shadow-sm" : "text-gray-500"}`}
-            >
-              Email
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode("phone")}
-              className={`rounded-xl px-3 py-2 ${mode === "phone" ? "bg-white shadow-sm" : "text-gray-500"}`}
-            >
-              Phone OTP
-            </button>
-          </div>
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">
               Full name
@@ -112,57 +68,12 @@ export default function SignupPage() {
               type="email"
               name="email"
               autoComplete="email"
-              required={mode === "email"}
+              required
               value={form.email}
               onChange={handleChange}
               className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:border-black focus:bg-white"
             />
           </div>
-          {mode === "phone" && otpSent ? (
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                Verification code
-              </label>
-              <input
-                inputMode="numeric"
-                pattern="[0-9]{6}"
-                maxLength={6}
-                required
-                value={otp}
-                onChange={e => setOtp(e.target.value)}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3"
-              />
-            </div>
-          ) : null}
-          {mode === "phone" ? (
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                Phone
-              </label>
-              <input
-                name="phone"
-                placeholder="+2547..."
-                autoComplete="tel"
-                required
-                value={form.phone}
-                onChange={handleChange}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:border-black focus:bg-white"
-              />
-            </div>
-          ) : (
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                Phone
-              </label>
-              <input
-                name="phone"
-                autoComplete="tel"
-                value={form.phone}
-                onChange={handleChange}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:border-black focus:bg-white"
-              />
-            </div>
-          )}
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700">
               Password
@@ -186,13 +97,7 @@ export default function SignupPage() {
             disabled={isSubmitting}
             className="w-full bg-[#171716] px-6 py-3.5 text-[11px] font-medium uppercase tracking-[0.13em] text-white hover:bg-neutral-700 disabled:opacity-70"
           >
-            {isSubmitting
-              ? "Please wait..."
-              : mode === "phone"
-                ? otpSent
-                  ? "Verify phone"
-                  : "Send verification code"
-                : "Create account"}
+            {isSubmitting ? "Please wait..." : "Create account"}
           </button>
         </form>
 
