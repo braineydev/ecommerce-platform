@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { ShoppingBag, X } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { useCart } from "../context/CartContext";
 
 export default function CartNotice() {
@@ -39,6 +39,18 @@ export default function CartNotice() {
       });
       setStage("flying");
     }, 2200);
+
+    const hideTimeout = window.setTimeout(() => {
+      setStage("hidden");
+      setTargetStyle(null);
+      dismissCartNotice();
+    }, 3700);
+
+    return () => {
+      window.clearTimeout(expandTimeout);
+      window.clearTimeout(flyTimeout);
+      window.clearTimeout(hideTimeout);
+    };
 
     return () => {
       window.clearTimeout(expandTimeout);

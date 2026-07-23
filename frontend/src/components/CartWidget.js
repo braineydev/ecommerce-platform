@@ -9,7 +9,10 @@ export default function CartWidget() {
   const count = getCartCount();
 
   return (
-    <div className="fixed right-5 z-50" style={{ top: "66.666%" }}>
+    <div
+      className="fixed right-5 z-50"
+      style={{ top: "66.666%", transform: "translateY(-50%)" }}
+    >
       <Link
         href="/cart"
         aria-label="Open cart"
