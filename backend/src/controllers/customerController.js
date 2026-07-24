@@ -2,7 +2,12 @@ const supabase = require("../config/supabase");
 
 const normalizeCustomer = (customer, email) => ({
   ...customer,
-  email: email || customer.email || customer.email_address || customer.user_email || "-",
+  email:
+    email ||
+    customer.email ||
+    customer.email_address ||
+    customer.user_email ||
+    "-",
 });
 
 const getCustomerEmailMap = async () => {
@@ -48,22 +53,33 @@ const updateCustomer = async (req, res) => {
   const { customer_id } = req.params;
   const { full_name, phone, role } = req.body;
   const validRoles = ["customer", "admin"];
+  const normalizedFullName =
+    typeof full_name === "string" ? full_name.trim() : "";
+  const normalizedPhone = typeof phone === "string" ? phone.trim() : null;
 
   if (role && !validRoles.includes(role))
     return res.status(400).json({ error: "Invalid role provided" });
-  if (typeof full_name !== "string" || !full_name.trim() || full_name.trim().length > 100)
-    return res.status(400).json({ error: "A customer name between 1 and 100 characters is required" });
-  if (phone !== undefined && (typeof phone !== "string" || phone.trim().length > 30))
-    return res.status(400).json({ error: "Phone number must be at most 30 characters" });
+  if (!normalizedFullName || normalizedFullName.length > 100)
+    return res
+      .status(400)
+      .json({
+        error: "A customer name between 1 and 100 characters is required",
+      });
+  if (normalizedPhone !== null && normalizedPhone.length > 30)
+    return res
+      .status(400)
+      .json({ error: "Phone number must be at most 30 characters" });
   if (customer_id === req.user?.id && role && role !== "admin")
-    return res.status(400).json({ error: "You cannot remove your own administrator access." });
+    return res
+      .status(400)
+      .json({ error: "You cannot remove your own administrator access." });
 
   try {
     const { data, error } = await supabase
       .from("profiles")
       .update({
-        full_name: full_name.trim(),
-        phone: typeof phone === "string" ? phone.trim() : null,
+        full_name: normalizedFullName,
+        phone: normalizedPhone || null,
         ...(role ? { role } : {}),
       })
       .eq("id", customer_id)
@@ -73,7 +89,8 @@ const updateCustomer = async (req, res) => {
     const customer = Array.isArray(data) ? data[0] : data;
     if (!customer) return res.status(404).json({ error: "Customer not found" });
 
-    const { data: authData, error: authError } = await supabase.auth.admin.getUserById(customer.id);
+    const { data: authData, error: authError } =
+      await supabase.auth.admin.getUserById(customer.id);
     if (authError) throw authError;
     res.status(200).json({
       message: "Customer updated successfully",
@@ -88,7 +105,9 @@ const updateCustomer = async (req, res) => {
 const deleteCustomer = async (req, res) => {
   const { customer_id } = req.params;
   if (customer_id === req.user?.id)
-    return res.status(400).json({ error: "You cannot delete your own administrator account." });
+    return res
+      .status(400)
+      .json({ error: "You cannot delete your own administrator account." });
 
   try {
     const { data: customer, error: customerError } = await supabase
@@ -99,14 +118,18 @@ const deleteCustomer = async (req, res) => {
     if (customerError || !customer)
       return res.status(404).json({ error: "Customer not found" });
     if (customer.role === "admin")
-      return res.status(403).json({ error: "Administrator accounts cannot be deleted here." });
+      return res
+        .status(403)
+        .json({ error: "Administrator accounts cannot be deleted here." });
 
     const { error } = await supabase.auth.admin.deleteUser(customer_id);
     if (error) throw error;
     res.status(200).json({ message: "Customer account deleted", customer_id });
   } catch (error) {
     console.error("Error deleting customer:", error);
-    res.status(500).json({ error: error.message || "Unable to delete customer" });
+    res
+      .status(500)
+      .json({ error: error.message || "Unable to delete customer" });
   }
 };
 

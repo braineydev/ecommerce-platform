@@ -23,7 +23,8 @@ const normalizeProduct = product => {
     typeof product.image_name === "string" && product.image_name.trim()
       ? product.image_name.trim()
       : null;
-  const images = uploadedImages.length > 0 ? uploadedImages : imageName ? [imageName] : [];
+  const images =
+    uploadedImages.length > 0 ? uploadedImages : imageName ? [imageName] : [];
 
   return {
     ...product,
@@ -122,21 +123,19 @@ exports.getProducts = async (req, res) => {
 // Get a single product by ID
 exports.getProductById = async (req, res) => {
   const { id } = req.params;
+  const normalizedId = String(id || "").trim();
+  const isUuid = /^[0-9a-fA-F-]{36}$/.test(normalizedId);
+  const isNumericId =
+    Number.isFinite(Number(normalizedId)) &&
+    String(Number(normalizedId)) === normalizedId;
 
-  // Prefer the public SEO slug while retaining ID URLs for existing bookmarks.
-  let { data, error } = await supabase
-    .from("products")
-    .select(PRODUCT_SELECT)
-    .eq("slug", id)
-    .single();
+  const query = supabase.from("products").select(PRODUCT_SELECT);
+  const request =
+    isUuid || isNumericId
+      ? query.or(`slug.eq.${normalizedId},id.eq.${normalizedId}`).single()
+      : query.eq("slug", normalizedId).single();
 
-  if (error?.code === "PGRST116") {
-    ({ data, error } = await supabase
-      .from("products")
-      .select(PRODUCT_SELECT)
-      .eq("id", id)
-      .single());
-  }
+  const { data, error } = await request;
 
   if (error) {
     if (error.code === "PGRST116") {
@@ -144,6 +143,10 @@ exports.getProductById = async (req, res) => {
     }
 
     return res.status(500).json({ error: error.message });
+  }
+
+  if (!data) {
+    return res.status(404).json({ error: "Product not found" });
   }
 
   res.status(200).json({ product: normalizeProduct(data) });

@@ -19,6 +19,12 @@ const slugify = value =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
+const isValidSlug = slug =>
+  /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(slug || "").trim());
+
+const isValidPhone = phone =>
+  /^[0-9()+\-.\s]*$/.test(String(phone || "").trim());
+
 const MAX_IMAGE_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_IMAGE_DIMENSION = 2048;
 
@@ -337,9 +343,18 @@ export default function AdminPage() {
     const discountedPrice = Number(
       selectedProduct?.discounted_price ?? selectedProduct?.price ?? 0,
     );
+    const rawSlug = String(selectedProduct?.slug || "").trim();
+    const slugValue = rawSlug || slugify(normalizedName);
 
     if (!normalizedName || !normalizedCategoryId) {
       setError("Product name and category are required.");
+      return;
+    }
+
+    if (rawSlug && !isValidSlug(rawSlug)) {
+      setError(
+        "Product slug must use only lowercase letters, numbers, and single hyphens.",
+      );
       return;
     }
 
@@ -378,9 +393,7 @@ export default function AdminPage() {
         typeof selectedProduct.brand === "string"
           ? selectedProduct.brand.trim()
           : null,
-      slug: selectedProduct.slug
-        ? String(selectedProduct.slug).trim()
-        : slugify(normalizedName),
+      slug: slugValue,
       meta_title: selectedProduct.meta_title || null,
       meta_description: selectedProduct.meta_description || null,
       price: discountedPrice,
@@ -428,13 +441,48 @@ export default function AdminPage() {
       return;
     }
 
+    const normalizedCustomerName = String(
+      selectedCustomer.full_name || "",
+    ).trim();
+    const normalizedCustomerPhone = String(selectedCustomer.phone || "").trim();
+    const normalizedCustomerRole = String(selectedCustomer.role || "customer");
+
+    if (!normalizedCustomerName) {
+      setError("Customer name is required.");
+      return;
+    }
+    if (normalizedCustomerName.length > 100) {
+      setError("Customer name must be 100 characters or less.");
+      return;
+    }
+    if (
+      normalizedCustomerPhone &&
+      (!isValidPhone(normalizedCustomerPhone) ||
+        normalizedCustomerPhone.length > 30)
+    ) {
+      setError(
+        "Phone may only include numbers, spaces, +, -, ., and parentheses, and must be 30 characters or less.",
+      );
+      return;
+    }
+    if (!["customer", "admin"].includes(normalizedCustomerRole)) {
+      setError("Invalid customer role selected.");
+      return;
+    }
+
+    const payload = {
+      full_name: normalizedCustomerName,
+      phone: normalizedCustomerPhone || null,
+      role: normalizedCustomerRole,
+    };
+
     setIsSavingCustomer(true);
     try {
       const res = await fetch(`${apiUrl}/customers/${selectedCustomer.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(selectedCustomer),
+        body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Unable to update customer");
@@ -549,13 +597,26 @@ export default function AdminPage() {
         ) : (
           <>
             {error && (
-              <div className="mb-6 flex items-center justify-between gap-3 border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">
+              <div
+                className="mb-6 flex items-center justify-between gap-3 border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+                role="alert"
+              >
                 <span>{error}</span>
-                <button type="button" onClick={() => setError("")} className="text-xs font-semibold uppercase tracking-wide">Dismiss</button>
+                <button
+                  type="button"
+                  onClick={() => setError("")}
+                  className="text-xs font-semibold uppercase tracking-wide"
+                >
+                  Dismiss
+                </button>
               </div>
             )}
             {success && (
-              <div className="pointer-events-none fixed inset-x-0 top-4 z-[80] flex justify-center px-4 sm:px-6 animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-300" role="status" aria-live="polite">
+              <div
+                className="pointer-events-none fixed inset-x-0 top-4 z-[80] flex justify-center px-4 sm:px-6 animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-300"
+                role="status"
+                aria-live="polite"
+              >
                 <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-green-200 bg-slate-950/95 px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(0,0,0,0.24)]">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-base text-green-400">
                     ✓
@@ -646,9 +707,13 @@ export default function AdminPage() {
                         <thead className="border-b border-neutral-200 bg-[#f1f0ed] text-[10px] font-medium uppercase tracking-[0.12em] text-neutral-500">
                           <tr>
                             <th className="px-4 py-3">Name</th>
-                            <th className="hidden px-4 py-3 sm:table-cell">Category</th>
+                            <th className="hidden px-4 py-3 sm:table-cell">
+                              Category
+                            </th>
                             <th className="px-4 py-3">Price</th>
-                            <th className="hidden px-4 py-3 md:table-cell">Stock</th>
+                            <th className="hidden px-4 py-3 md:table-cell">
+                              Stock
+                            </th>
                             <th className="px-4 py-3">Actions</th>
                           </tr>
                         </thead>
@@ -662,12 +727,16 @@ export default function AdminPage() {
                                 {product.name}
                               </td>
                               <td className="hidden px-4 py-3 text-neutral-600 sm:table-cell">
-                                {product.category?.name || product.categories?.name || "Uncategorised"}
+                                {product.category?.name ||
+                                  product.categories?.name ||
+                                  "Uncategorised"}
                               </td>
                               <td className="px-4 py-3">
                                 {formatCurrency(product.price)}
                               </td>
-                              <td className="hidden px-4 py-3 md:table-cell">{product.stock}</td>
+                              <td className="hidden px-4 py-3 md:table-cell">
+                                {product.stock}
+                              </td>
                               <td className="whitespace-nowrap px-4 py-3 space-x-2">
                                 <button
                                   type="button"
@@ -792,9 +861,15 @@ export default function AdminPage() {
                     </button>
                   </div>
                   <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
-                    <form onSubmit={saveProduct} className="space-y-5 pb-4 sm:space-y-6">
+                    <form
+                      onSubmit={saveProduct}
+                      className="space-y-5 pb-4 sm:space-y-6"
+                    >
                       {error && (
-                        <div className="border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+                        <div
+                          className="border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+                          role="alert"
+                        >
                           {error}
                         </div>
                       )}
@@ -813,6 +888,27 @@ export default function AdminPage() {
                           className="mt-2 w-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900"
                           required
                         />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-medium uppercase tracking-[0.14em] text-neutral-600">
+                          Slug
+                        </label>
+                        <input
+                          value={selectedProduct.slug}
+                          onChange={e =>
+                            setSelectedProduct(prev => ({
+                              ...prev,
+                              slug: e.target.value,
+                            }))
+                          }
+                          placeholder="optional product-slug"
+                          className="mt-2 w-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900"
+                        />
+                        <p className="mt-2 text-xs text-neutral-500">
+                          Optional. Only lowercase letters, numbers, and single
+                          hyphens are allowed. If empty, a slug is generated
+                          from the product name.
+                        </p>
                       </div>
                       <fieldset>
                         <legend className="text-[10px] font-medium uppercase tracking-[0.14em] text-neutral-600">
@@ -901,7 +997,8 @@ export default function AdminPage() {
                         </div>
                       </div>
                       <p className="-mt-2 text-xs text-neutral-500">
-                        The discounted price is automatically kept at or below the initial price.
+                        The discounted price is automatically kept at or below
+                        the initial price.
                       </p>
                       <div>
                         <label className="text-[10px] font-medium uppercase tracking-[0.14em] text-neutral-600">
@@ -937,9 +1034,9 @@ export default function AdminPage() {
                           Stock
                         </label>
                         <input
-                            type="number"
-                            min="0"
-                            step="1"
+                          type="number"
+                          min="0"
+                          step="1"
                           value={selectedProduct.stock}
                           onChange={e =>
                             setSelectedProduct(prev => ({
@@ -1023,9 +1120,12 @@ export default function AdminPage() {
                 </div>
 
                 <div className="rounded-4xl border border-gray-100 bg-white p-6 shadow-sm">
-                  <h2 className="text-xl font-semibold text-gray-900">Customer editor</h2>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Customer editor
+                  </h2>
                   <p className="mt-3 text-sm leading-6 text-gray-500">
-                    Select Edit on a customer to review and update their details in a focused, mobile-friendly dialog.
+                    Select Edit on a customer to review and update their details
+                    in a focused, mobile-friendly dialog.
                   </p>
                 </div>
               </div>
@@ -1036,33 +1136,96 @@ export default function AdminPage() {
                 <div className="w-full max-w-lg rounded-2xl border border-neutral-200 bg-white shadow-2xl">
                   <div className="flex items-start justify-between border-b border-neutral-200 px-5 py-4">
                     <div>
-                      <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">Customer editor</p>
-                      <h2 className="mt-1 text-xl font-semibold text-neutral-950">Edit customer</h2>
+                      <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">
+                        Customer editor
+                      </p>
+                      <h2 className="mt-1 text-xl font-semibold text-neutral-950">
+                        Edit customer
+                      </h2>
                     </div>
-                    <button type="button" onClick={closeCustomerModal} disabled={isSavingCustomer} className="border border-red-300 bg-red-50 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-red-700 hover:bg-red-100 disabled:opacity-50">Close</button>
+                    <button
+                      type="button"
+                      onClick={closeCustomerModal}
+                      disabled={isSavingCustomer}
+                      className="border border-red-300 bg-red-50 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-red-700 hover:bg-red-100 disabled:opacity-50"
+                    >
+                      Close
+                    </button>
                   </div>
                   <form onSubmit={updateCustomer} className="space-y-4 p-5">
-                    {error && <div className="border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</div>}
+                    {error && (
+                      <div
+                        className="border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+                        role="alert"
+                      >
+                        {error}
+                      </div>
+                    )}
                     <div>
-                      <label className="text-sm font-medium text-gray-700">Name</label>
-                      <input required value={selectedCustomer.full_name || ""} onChange={e => setSelectedCustomer(prev => ({ ...prev, full_name: e.target.value }))} className="mt-2 w-full border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900" />
+                      <label className="text-sm font-medium text-gray-700">
+                        Name
+                      </label>
+                      <input
+                        required
+                        value={selectedCustomer.full_name || ""}
+                        onChange={e =>
+                          setSelectedCustomer(prev => ({
+                            ...prev,
+                            full_name: e.target.value,
+                          }))
+                        }
+                        className="mt-2 w-full border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900"
+                      />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700">Phone</label>
-                      <input value={selectedCustomer.phone || ""} onChange={e => setSelectedCustomer(prev => ({ ...prev, phone: e.target.value }))} className="mt-2 w-full border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900" />
+                      <label className="text-sm font-medium text-gray-700">
+                        Phone
+                      </label>
+                      <input
+                        value={selectedCustomer.phone || ""}
+                        onChange={e =>
+                          setSelectedCustomer(prev => ({
+                            ...prev,
+                            phone: e.target.value,
+                          }))
+                        }
+                        className="mt-2 w-full border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900"
+                      />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700">Role</label>
-                      <select value={selectedCustomer.role || "customer"} onChange={e => setSelectedCustomer(prev => ({ ...prev, role: e.target.value }))} className="mt-2 w-full border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900">
+                      <label className="text-sm font-medium text-gray-700">
+                        Role
+                      </label>
+                      <select
+                        value={selectedCustomer.role || "customer"}
+                        onChange={e =>
+                          setSelectedCustomer(prev => ({
+                            ...prev,
+                            role: e.target.value,
+                          }))
+                        }
+                        className="mt-2 w-full border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900"
+                      >
                         <option value="customer">Customer</option>
                         <option value="admin">Admin</option>
                       </select>
                     </div>
-                    <button type="submit" disabled={isSavingCustomer} className="w-full bg-[#171716] px-5 py-3 text-[11px] font-medium uppercase tracking-[0.13em] text-white hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-400">
+                    <button
+                      type="submit"
+                      disabled={isSavingCustomer}
+                      className="w-full bg-[#171716] px-5 py-3 text-[11px] font-medium uppercase tracking-[0.13em] text-white hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-400"
+                    >
                       {isSavingCustomer ? "Saving customer…" : "Save customer"}
                     </button>
                     {selectedCustomer.role !== "admin" && (
-                      <button type="button" onClick={deleteCustomer} disabled={isSavingCustomer} className="w-full border border-red-200 px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-50">Delete customer account</button>
+                      <button
+                        type="button"
+                        onClick={deleteCustomer}
+                        disabled={isSavingCustomer}
+                        className="w-full border border-red-200 px-5 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-50"
+                      >
+                        Delete customer account
+                      </button>
                     )}
                   </form>
                 </div>

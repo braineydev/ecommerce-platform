@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import CartNotice from "../components/CartNotice";
+import CartWidget from "../components/CartWidget";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import WhatsAppHelp from "../components/WhatsAppHelp";
-import CartWidget from "../components/CartWidget";
 import { AuthProvider } from "../context/AuthContext";
 import { CartProvider } from "../context/CartContext";
 import "./globals.css";
