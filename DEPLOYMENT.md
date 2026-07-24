@@ -1,49 +1,43 @@
-# Deployment configuration
+# Vercel deployment
 
-The frontend serves browser requests through its same-origin `/api` path. Next.js proxies that path to the backend. This avoids browser CORS and cookie-domain problems, and it keeps the backend URL out of client-side code.
+The `frontend/` directory is the complete web application: its Next.js Route
+Handlers expose the same-origin `/api/*` endpoints and connect directly to
+Supabase. It does not proxy API requests to Render.
 
-## Frontend environment variables
+## Configure Vercel
 
-Set these in the environment that runs **`next build`** and `next start`:
+Create a Vercel project from this repository with **Root Directory** set to
+`frontend`. Vercel detects Next.js and uses `npm run build` automatically.
 
-| Variable | Example | Required |
+Set these environment variables for Production, Preview, and Development as
+appropriate:
+
+| Variable | Required | Notes |
 | --- | --- | --- |
-| `BACKEND_API_URL` | `https://api.example.com/api` | Yes in production |
-| `NEXT_PUBLIC_SITE_URL` | `https://shop.example.com` | Yes |
+| `SUPABASE_URL` | Yes | Supabase project URL; server-only. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Server-only privileged key. Never use `NEXT_PUBLIC_`. |
+| `NEXT_PUBLIC_SITE_URL` | Yes in production | Canonical storefront URL, for example `https://shop.example.com`. |
+| `AUTH_CALLBACK_URL` | Optional | Explicit OAuth callback URL; otherwise the request origin is used. |
 
-`BACKEND_API_URL` must be an absolute `http` or `https` URL ending in `/api`. Do not set it to `/api`: that makes the Next.js rewrite call itself and returns an HTML 404 page instead of API JSON. The production build now stops with a clear error if this value is missing or relative.
-
-## Backend environment variables
-
-Configure the backend with:
-
-| Variable | Example | Required |
-| --- | --- | --- |
-| `PORT` | `5000` | Platform-dependent |
-| `SUPABASE_URL` | `https://your-project.supabase.co` | Yes |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role secret | Yes |
-| `FRONTEND_ORIGINS` | `https://shop.example.com` | Yes |
-| `FRONTEND_URL` | `https://shop.example.com` | Yes, for OAuth |
-| `AUTH_CALLBACK_URL` | `https://shop.example.com/auth/callback` | Yes, when Google sign-in is enabled |
-
-For preview deployments, add every preview frontend URL to `FRONTEND_ORIGINS`, separated by commas. Origins must not have trailing slashes.
-
-## Render backend deployment
-
-This repository includes `render.yaml`. In Render, choose **New → Blueprint**, select this repository, and create the `ecommerce-platform-api` service. It uses `backend` as the root directory, runs `npm ci`, starts with `npm start`, and checks `/api/health`.
-
-In the Render service environment settings, enter the values from the backend table above. Render provides `PORT` automatically; do not set it manually. After the first deploy, copy the service URL (for example, `https://ecommerce-platform-api.onrender.com`) and set the frontend build-time variable:
-
-```env
-BACKEND_API_URL=https://tripple-ore.onrender.com/api
-```
-
-For Google sign-in, also add `https://shop.example.com/auth/callback` to the allowed redirect URLs in your Supabase Auth settings.
+Add the production and preview callback URLs (`https://your-domain/auth/callback`)
+to Supabase Auth's allowed redirect URLs. Configure the same production domain
+in Supabase Auth's Site URL setting.
 
 ## Pre-launch checks
 
-1. Deploy the backend first and confirm `https://api.example.com/api/health` returns JSON.
-2. Set the frontend variables, then build the frontend.
-3. Open `https://shop.example.com/api/health`; it should return the backend JSON through the frontend proxy.
-4. Test login, signup, session refresh, checkout, and an admin-only request from the deployed site.
-5. Keep secrets only in the backend deployment settings—never use `NEXT_PUBLIC_` for service-role keys.
+1. Confirm `https://shop.example.com/api/health` returns JSON.
+2. Test sign-up, sign-in, sign-out, session exchange, and Google OAuth.
+3. Test cart, orders, payment reference submission, and administrator-only
+   product/customer/order actions.
+4. Test an image smaller than 4 MB; larger uploads must use a direct signed
+   Supabase Storage upload flow.
+5. Confirm `SUPABASE_SERVICE_ROLE_KEY` is absent from browser bundles and
+   `NEXT_PUBLIC_*` variables.
+
+## Render retirement
+
+Keep the existing Render service available during the initial Vercel release
+as a rollback option, but do not send new traffic to it. Once the checks above
+and production monitoring are clean, remove its environment variables and
+cancel the Render service. The `backend/` directory remains useful as a
+historical reference and for SQL migrations until it is deliberately archived.

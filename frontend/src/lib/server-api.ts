@@ -1,12 +1,10 @@
-const localApiUrl = "http://localhost:5000/api";
+const localApiUrl = "http://localhost:3000/api";
 
-/** Returns the absolute backend URL required by server-rendered components. */
+/** Returns the same-origin API base used by server-rendered components. */
 export function getServerApiUrl() {
-  const apiUrl = process.env.BACKEND_API_URL || localApiUrl;
-
-  if (!/^https?:\/\//.test(apiUrl)) {
-    throw new Error("BACKEND_API_URL must be an absolute http(s) URL ending in /api.");
-  }
+  const apiUrl = process.env.NEXT_PUBLIC_SITE_URL
+    ? `${process.env.NEXT_PUBLIC_SITE_URL}/api`
+    : localApiUrl;
 
   return apiUrl.replace(/\/$/, "");
 }

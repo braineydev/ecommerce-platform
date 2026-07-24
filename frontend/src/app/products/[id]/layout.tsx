@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { getServerApiUrl } from "../../../lib/server-api";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-const apiUrl = getServerApiUrl();
+const apiUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ? `${process.env.NEXT_PUBLIC_SITE_URL}/api`
+  : "http://localhost:3000/api";
 
 async function getProduct(identifier: string) {
   try {

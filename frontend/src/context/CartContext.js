@@ -1,10 +1,12 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useAuth } from "./AuthContext";
 
 const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
+  const { user } = useAuth();
   const [cart, setCart] = useState([]);
   const [cartNotice, setCartNotice] = useState(null);
 
@@ -37,6 +39,18 @@ export function CartProvider({ children }) {
       return [...current, { ...item, quantity: item.quantity || 1 }];
     });
     setCartNotice({ productName: item.name || "Item" });
+
+    if (typeof window !== "undefined" && user) {
+      fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          product_id: item.id,
+          quantity: item.quantity || 1,
+        }),
+      }).catch(() => undefined);
+    }
   };
 
   const updateQuantity = (id, quantity) => {

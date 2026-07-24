@@ -12,6 +12,6 @@ export async function readApiJson<T>(response: Response): Promise<T> {
   }
 
   throw new Error(
-    `The API returned ${response.status} ${response.statusText || "response"} instead of JSON. Check the backend URL and deployment logs.`,
+    `The API returned ${response.status} ${response.statusText || "response"} instead of JSON. Check the API route and deployment logs.`,
   );
 }

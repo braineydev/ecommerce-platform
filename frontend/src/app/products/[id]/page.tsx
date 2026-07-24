@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ProductDetailClient from "./ProductDetailClient";
-import { getServerApiUrl } from "../../../lib/server-api";
 
-const apiUrl = getServerApiUrl();
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const apiUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ? `${process.env.NEXT_PUBLIC_SITE_URL}/api`
+  : "http://localhost:3000/api";
 
 type Product = {
   id: string | number;

@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getServerApiUrl } from "../../../lib/server-api";
 
-const apiUrl = getServerApiUrl();
+const apiUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ? `${process.env.NEXT_PUBLIC_SITE_URL}/api`
+  : "http://localhost:3000/api";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80";

@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
-import { getServerApiUrl } from "../lib/server-api";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-const apiUrl = getServerApiUrl();
+const apiUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ? `${process.env.NEXT_PUBLIC_SITE_URL}/api`
+  : "http://localhost:3000/api";
 
 const staticRoutes = [
   { url: siteUrl, changeFrequency: "daily" as const, priority: 1 },

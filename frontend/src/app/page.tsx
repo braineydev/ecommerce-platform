@@ -4,6 +4,7 @@ import { ArrowRight, Heart, Package } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { API_PROXY_PATH, readApiJson } from "../lib/api";
 
 function seededNumberFromString(s: string) {
@@ -71,6 +72,7 @@ export default function Storefront() {
 
 function StorefrontContent() {
   const router = useRouter();
+  const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -131,6 +133,40 @@ function StorefrontContent() {
     void fetchProducts();
     void fetchCategories();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setWishlist([]);
+      return;
+    }
+
+    let isActive = true;
+    const loadWishlist = async () => {
+      try {
+        const response = await fetch(`${API_PROXY_PATH}/wishlists`, {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (!response.ok) return;
+        const data = await readApiJson<{
+          wishlist?: Array<{ product_id?: string | number }>;
+        }>(response);
+        if (!isActive) return;
+        setWishlist(
+          (data.wishlist || [])
+            .map(item => item.product_id)
+            .filter(Boolean) as Array<string | number>,
+        );
+      } catch {
+        if (isActive) setWishlist([]);
+      }
+    };
+
+    void loadWishlist();
+    return () => {
+      isActive = false;
+    };
+  }, [user]);
 
   useEffect(() => {
     const syncCategoryFromUrl = () => {
@@ -251,12 +287,37 @@ function StorefrontContent() {
     router.push(queryString ? `/?${queryString}#shop` : "/#shop");
   };
 
-  const toggleWishlist = (productId: string | number) => {
-    setWishlist(prev =>
-      prev.includes(productId)
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId],
-    );
+  const toggleWishlist = async (productId: string | number) => {
+    const isCurrentlySaved = wishlist.includes(productId);
+
+    if (isCurrentlySaved) {
+      setWishlist(prev => prev.filter(id => id !== productId));
+      if (user) {
+        try {
+          await fetch(`${API_PROXY_PATH}/wishlists/${productId}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+        } catch {
+          // Keep the UI in sync even if the request fails.
+        }
+      }
+      return;
+    }
+
+    setWishlist(prev => [...prev, productId]);
+    if (user) {
+      try {
+        await fetch(`${API_PROXY_PATH}/wishlists`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ product_id: productId }),
+        });
+      } catch {
+        // Preserve the optimistic UI state even if the request fails.
+      }
+    }
   };
 
   const categoryOptions = [
