@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useCart } from "../../../context/CartContext";
+import { getProductImageSrc } from "../../../lib/product-image";
 
 type ProductDetailClientProps = {
   product: {
@@ -179,7 +180,7 @@ export default function ProductDetailClient({
           <div className="overflow-hidden border border-neutral-200 bg-[#f1f0ed] p-3">
             <div className="relative h-105 md:h-140 w-full overflow-hidden">
               <Image
-                src={imageUrl}
+                src={getProductImageSrc(imageUrl)}
                 alt={product.name}
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"

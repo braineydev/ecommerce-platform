@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { API_PROXY_PATH, readApiJson } from "../lib/api";
+import { getProductImageSrc } from "../lib/product-image";
 
 function seededNumberFromString(s: string) {
   let h = 0;
@@ -574,7 +575,7 @@ function StorefrontContent() {
                     <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-[#f1f0ed]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={getProductPrimaryImage(product)}
+                        src={getProductImageSrc(getProductPrimaryImage(product))}
                         alt={product.name}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
