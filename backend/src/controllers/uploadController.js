@@ -121,16 +121,13 @@ exports.uploadProductImage = async (req, res) => {
       .json({ error: "The uploaded file is not a supported, valid image" });
   }
 
-  const optimizedImage = optimizedImageBuffer.buffer.slice(
-    optimizedImageBuffer.byteOffset,
-    optimizedImageBuffer.byteOffset + optimizedImageBuffer.byteLength,
-  );
-
   const uniqueFilename = `${Date.now()}-${crypto.randomUUID()}.webp`;
 
   const { data, error } = await supabase.storage
     .from(PRODUCT_IMAGE_BUCKET)
-    .upload(uniqueFilename, optimizedImage, {
+    // Pass the Buffer itself. Its underlying SharedArrayBuffer is not a valid
+    // Storage body and is otherwise stored as the text "[object SharedArrayBuffer]".
+    .upload(uniqueFilename, optimizedImageBuffer, {
       contentType: "image/webp",
       upsert: false,
     });

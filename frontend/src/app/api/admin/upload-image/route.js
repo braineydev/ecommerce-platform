@@ -137,15 +137,13 @@ export async function POST(request) {
       .webp({ quality: 88, effort: 4 })
       .toBuffer();
 
-    const optimizedImage = optimizedImageBuffer.buffer.slice(
-      optimizedImageBuffer.byteOffset,
-      optimizedImageBuffer.byteOffset + optimizedImageBuffer.byteLength,
-    );
-
     const uniqueFilename = `${Date.now()}-${crypto.randomUUID()}.webp`;
     const { error: uploadError } = await supabase.storage
       .from(PRODUCT_IMAGE_BUCKET)
-      .upload(uniqueFilename, optimizedImage, {
+      // Supabase Storage accepts Node Buffers. Passing its underlying
+      // SharedArrayBuffer instead is silently serialized as text such as
+      // "[object SharedArrayBuffer]", which creates a broken image URL.
+      .upload(uniqueFilename, optimizedImageBuffer, {
         contentType: "image/webp",
         upsert: false,
       });
