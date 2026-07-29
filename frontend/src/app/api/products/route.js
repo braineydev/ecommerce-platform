@@ -1,28 +1,35 @@
 import { NextResponse } from "next/server";
-import { getProductsFromSupabase } from "../../../lib/catalog";
+
+const backendApiBase = (
+  process.env.BACKEND_API_URL || "http://localhost:5000/api"
+).replace(/\/$/, "");
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const search = searchParams.get("search") || "";
-  const category = searchParams.get("category") || "";
-  const featured = searchParams.get("featured") || "";
-  const brand = searchParams.get("brand") || "";
-  const min_price = searchParams.get("min_price") || undefined;
-  const max_price = searchParams.get("max_price") || undefined;
-  const page = searchParams.get("page") || "1";
-  const limit = searchParams.get("limit") || "24";
+  const targetUrl = new URL(`${backendApiBase}/products`);
+
+  searchParams.forEach((value, key) => {
+    targetUrl.searchParams.set(key, value);
+  });
 
   try {
-    const payload = await getProductsFromSupabase({
-      search,
-      category,
-      featured,
-      brand,
-      min_price,
-      max_price,
-      page,
-      limit,
+    const response = await fetch(targetUrl, {
+      headers: {
+        accept: "application/json",
+      },
+      cache: "no-store",
     });
+
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      return NextResponse.json(
+        {
+          error: payload?.error || "Unable to load products",
+        },
+        { status: response.status },
+      );
+    }
 
     return NextResponse.json(payload);
   } catch (error) {

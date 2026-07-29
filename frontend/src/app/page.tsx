@@ -41,6 +41,25 @@ function normalizeCategorySlug(value: string) {
   return slug;
 }
 
+function getProductPrimaryImage(product: Product) {
+  const normalizedImages = Array.isArray(product.images)
+    ? product.images.filter(
+        (image): image is string =>
+          typeof image === "string" && image.trim() !== "",
+      )
+    : [];
+  const fallbackImage =
+    typeof product.image_name === "string" && product.image_name.trim()
+      ? product.image_name.trim()
+      : null;
+
+  return (
+    normalizedImages[0] ||
+    fallbackImage ||
+    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&q=80"
+  );
+}
+
 type Product = {
   id: string | number;
   slug?: string;
@@ -51,6 +70,7 @@ type Product = {
   discounted_price?: number | string;
   stock?: number;
   images?: string[];
+  image_name?: string | null;
   category?: { name?: string; slug?: string } | string | null;
   categories?: { name?: string; slug?: string } | string | null;
   category_name?: string;
@@ -133,6 +153,34 @@ function StorefrontContent() {
     void fetchProducts();
     void fetchCategories();
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || window.location.pathname !== "/") {
+      return;
+    }
+
+    if (window.location.hash) {
+      return;
+    }
+
+    if (isLoading) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const shopSection = document.getElementById("shop");
+      if (!shopSection) return;
+
+      const targetTop = Math.max(
+        0,
+        shopSection.getBoundingClientRect().top + window.scrollY - 96,
+      );
+
+      window.scrollTo({ top: targetTop, behavior: "smooth" });
+    }, 1200);
+
+    return () => window.clearTimeout(timer);
+  }, [isLoading]);
 
   useEffect(() => {
     if (!user) {
@@ -526,10 +574,7 @@ function StorefrontContent() {
                     <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-[#f1f0ed]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={
-                          product.images?.[0] ||
-                          "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&q=80"
-                        }
+                        src={getProductPrimaryImage(product)}
                         alt={product.name}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />

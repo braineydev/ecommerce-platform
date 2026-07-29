@@ -2,6 +2,33 @@ const supabase = require("../config/supabase");
 
 const PRODUCT_SELECT = "*, categories(id, name, slug)";
 
+const normalizeImageValues = value => {
+  if (Array.isArray(value)) {
+    return value.filter(image => typeof image === "string" && image.trim());
+  }
+
+  if (typeof value === "string") {
+    const trimmedValue = value.trim();
+    if (!trimmedValue) return [];
+
+    try {
+      const parsedValue = JSON.parse(trimmedValue);
+      if (Array.isArray(parsedValue)) {
+        return parsedValue.filter(
+          image => typeof image === "string" && image.trim(),
+        );
+      }
+      if (typeof parsedValue === "string" && parsedValue.trim()) {
+        return [parsedValue.trim()];
+      }
+    } catch {
+      return [trimmedValue];
+    }
+  }
+
+  return [];
+};
+
 const normalizeProduct = product => {
   if (!product) return product;
 
@@ -16,9 +43,7 @@ const normalizeProduct = product => {
   );
   const initialPrice = Number(product.initial_price ?? discountedPrice);
 
-  const uploadedImages = Array.isArray(product.images)
-    ? product.images.filter(image => typeof image === "string" && image.trim())
-    : [];
+  const uploadedImages = normalizeImageValues(product.images);
   const imageName =
     typeof product.image_name === "string" && product.image_name.trim()
       ? product.image_name.trim()
