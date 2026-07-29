@@ -137,13 +137,16 @@ export async function POST(request) {
       .webp({ quality: 88, effort: 4 })
       .toBuffer();
 
+    // Use a Blob so Storage submits a multipart binary body. Passing a Node
+    // Buffer through the Vercel runtime can UTF-8 encode binary bytes and
+    // produce a URL for a corrupt WebP object.
+    const optimizedImage = new Blob([optimizedImageBuffer], {
+      type: "image/webp",
+    });
     const uniqueFilename = `${Date.now()}-${crypto.randomUUID()}.webp`;
     const { error: uploadError } = await supabase.storage
       .from(PRODUCT_IMAGE_BUCKET)
-      // Supabase Storage accepts Node Buffers. Passing its underlying
-      // SharedArrayBuffer instead is silently serialized as text such as
-      // "[object SharedArrayBuffer]", which creates a broken image URL.
-      .upload(uniqueFilename, optimizedImageBuffer, {
+      .upload(uniqueFilename, optimizedImage, {
         contentType: "image/webp",
         upsert: false,
       });
