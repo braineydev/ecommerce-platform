@@ -8,11 +8,44 @@ import {
 } from "../../../../lib/auth-route-utils";
 import { createSupabaseAdminClient } from "../../../../lib/supabase-server";
 
+export const runtime = "nodejs";
+
 // Vercel Functions accept request bodies up to 4.5 MB. Leave headroom for
 // multipart metadata instead of advertising an upload size that cannot reach
 // this handler in production.
 const MAX_FILE_SIZE = 4 * 1024 * 1024;
 const MAX_DIMENSION = 2048;
+const PRODUCT_IMAGE_BUCKET = "product-images";
+
+async function ensurePublicProductImageBucket(supabase) {
+  const { data: bucket, error: getBucketError } = await supabase.storage
+    .getBucket(PRODUCT_IMAGE_BUCKET);
+
+  if (getBucketError && !/not found/i.test(getBucketError.message || "")) {
+    throw getBucketError;
+  }
+
+  if (!bucket) {
+    const { error } = await supabase.storage.createBucket(PRODUCT_IMAGE_BUCKET, {
+      public: true,
+      fileSizeLimit: MAX_FILE_SIZE,
+      allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "image/avif"],
+    });
+    if (error) throw error;
+    return;
+  }
+
+  // The storefront stores a durable URL in the product record. A private
+  // bucket returns a public-looking URL that browsers cannot read (403), so
+  // make the bucket policy match the URL contract before accepting an upload.
+  if (!bucket.public) {
+    const { error } = await supabase.storage.updateBucket(
+      PRODUCT_IMAGE_BUCKET,
+      { public: true },
+    );
+    if (error) throw error;
+  }
+}
 
 function validateImageBuffer(buffer, mimetype) {
   if (buffer.length > MAX_FILE_SIZE) return false;
@@ -78,6 +111,8 @@ export async function POST(request) {
   }
 
   try {
+    await ensurePublicProductImageBucket(supabase);
+
     const metadata = await sharp(buffer, {
       limitInputPixels: MAX_DIMENSION * MAX_DIMENSION,
     }).metadata();
@@ -95,16 +130,21 @@ export async function POST(request) {
       );
     }
 
-    const optimizedImage = await sharp(buffer, {
+    const optimizedImageBuffer = await sharp(buffer, {
       limitInputPixels: MAX_DIMENSION * MAX_DIMENSION,
     })
       .rotate()
       .webp({ quality: 88, effort: 4 })
       .toBuffer();
 
+    const optimizedImage = optimizedImageBuffer.buffer.slice(
+      optimizedImageBuffer.byteOffset,
+      optimizedImageBuffer.byteOffset + optimizedImageBuffer.byteLength,
+    );
+
     const uniqueFilename = `${Date.now()}-${crypto.randomUUID()}.webp`;
     const { error: uploadError } = await supabase.storage
-      .from("product-images")
+      .from(PRODUCT_IMAGE_BUCKET)
       .upload(uniqueFilename, optimizedImage, {
         contentType: "image/webp",
         upsert: false,
@@ -115,7 +155,7 @@ export async function POST(request) {
     }
 
     const { data: publicUrlData } = supabase.storage
-      .from("product-images")
+      .from(PRODUCT_IMAGE_BUCKET)
       .getPublicUrl(uniqueFilename);
     return NextResponse.json(
       {
