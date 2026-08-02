@@ -702,92 +702,189 @@ export default function AdminPage() {
                         New product
                       </button>
                     </div>
-                    <div className="min-w-0 overflow-x-auto overscroll-x-contain rounded-3xl border border-neutral-200 bg-white shadow-sm">
-                      <div className="px-4 py-3 text-xs text-neutral-500 sm:hidden">
-                        Swipe left to view all columns.
+                    <div className="rounded-4xl border border-neutral-200 bg-white shadow-sm">
+                      <div className="px-5 py-4 sm:hidden">
+                        <div className="flex items-center justify-between gap-4">
+                          <div>
+                            <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">
+                              Product list
+                            </p>
+                            <h3 className="mt-1 text-lg font-semibold text-neutral-950">
+                              Quick catalog overview
+                            </h3>
+                          </div>
+                          <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                            {products.length} products
+                          </span>
+                        </div>
                       </div>
-                      <table className="min-w-max w-full table-auto text-left text-sm">
-                        <thead className="border-b border-neutral-200 bg-[#f1f0ed] text-[10px] font-medium uppercase tracking-[0.12em] text-neutral-500">
-                          <tr>
-                            <th className="px-4 py-3">Name</th>
-                            <th className="hidden px-4 py-3 sm:table-cell">
-                              Category
-                            </th>
-                            <th className="px-4 py-3">Price</th>
-                            <th className="hidden px-4 py-3 md:table-cell">
-                              Stock
-                            </th>
-                            <th className="px-4 py-3">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {products.map(product => (
-                            <tr
-                              key={product.id}
-                              className="border-t border-neutral-200"
-                            >
-                              <td className="px-4 py-4 font-medium text-neutral-950">
-                                {product.name}
-                              </td>
-                              <td className="hidden px-4 py-3 text-neutral-600 sm:table-cell">
-                                {product.category?.name ||
-                                  product.categories?.name ||
-                                  "Uncategorised"}
-                              </td>
-                              <td className="px-4 py-3">
-                                {formatCurrency(product.price)}
-                              </td>
-                              <td className="hidden px-4 py-3 md:table-cell">
-                                {product.stock}
-                              </td>
-                              <td className="whitespace-nowrap px-4 py-3 space-x-2">
-                                <button
-                                  type="button"
-                                  className="border border-neutral-300 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.1em] text-neutral-700 hover:bg-neutral-100"
-                                  onClick={() => handleProductSelect(product)}
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  type="button"
-                                  className="border border-red-200 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.1em] text-red-700 hover:bg-red-50"
-                                  onClick={async () => {
-                                    if (!confirm("Delete this product?"))
-                                      return;
-                                    const res = await fetch(
-                                      `${apiUrl}/admin/products/${product.id}`,
-                                      {
-                                        method: "DELETE",
-                                        credentials: "include",
-                                      },
+
+                      <div className="space-y-4 p-4 sm:hidden">
+                        {products.map(product => (
+                          <div
+                            key={product.id}
+                            className="rounded-3xl border border-neutral-200 bg-[#f9faf8] p-4 shadow-sm"
+                          >
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="min-w-0">
+                                <p className="text-base font-semibold text-neutral-950 truncate">
+                                  {product.name}
+                                </p>
+                                <p className="mt-2 text-xs uppercase tracking-[0.14em] text-neutral-500">
+                                  {product.category?.name ||
+                                    product.categories?.name ||
+                                    "Uncategorised"}
+                                </p>
+                              </div>
+                              <div className="shrink-0 text-right">
+                                <p className="text-sm font-semibold text-neutral-950">
+                                  {formatCurrency(product.price)}
+                                </p>
+                                <p className="mt-2 text-xs text-neutral-600">
+                                  {product.stock ?? 0} in stock
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="mt-4 flex flex-wrap gap-2">
+                              <span className="inline-flex items-center rounded-full bg-[#eef7f2] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                                {product.stock > 20
+                                  ? "Plenty"
+                                  : product.stock > 5
+                                    ? "Low stock"
+                                    : "Almost out"}
+                              </span>
+                              <span className="inline-flex items-center rounded-full bg-[#eff3f8] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-700">
+                                {product.image_name ? "Has image" : "No image"}
+                              </span>
+                            </div>
+
+                            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                              <button
+                                type="button"
+                                className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm font-semibold uppercase tracking-[0.11em] text-neutral-950 transition hover:border-neutral-400 hover:bg-neutral-50"
+                                onClick={() => handleProductSelect(product)}
+                              >
+                                Edit product
+                              </button>
+                              <button
+                                type="button"
+                                className="w-full rounded-3xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold uppercase tracking-[0.11em] text-red-700 transition hover:bg-red-100"
+                                onClick={async () => {
+                                  if (!confirm("Delete this product?")) return;
+                                  const res = await fetch(
+                                    `${apiUrl}/admin/products/${product.id}`,
+                                    {
+                                      method: "DELETE",
+                                      credentials: "include",
+                                    },
+                                  );
+                                  const data = await res.json();
+                                  if (!res.ok) {
+                                    setError(
+                                      data.error || "Unable to delete product",
                                     );
-                                    const data = await res.json();
-                                    if (!res.ok) {
-                                      setError(
-                                        data.error ||
-                                          "Unable to delete product",
-                                      );
-                                      return;
-                                    }
-                                    setSuccess(
-                                      data.message || "Product deleted",
-                                    );
-                                    setProducts(prev =>
-                                      prev.filter(
-                                        item => item.id !== product.id,
-                                      ),
-                                    );
-                                    if (selectedProduct?.id === product.id)
-                                      setSelectedProduct(null);
-                                  }}
-                                >
-                                  Delete
-                                </button>
-                              </td>
+                                    return;
+                                  }
+                                  setSuccess(data.message || "Product deleted");
+                                  setProducts(prev =>
+                                    prev.filter(item => item.id !== product.id),
+                                  );
+                                  if (selectedProduct?.id === product.id)
+                                    setSelectedProduct(null);
+                                }}
+                              >
+                                Delete product
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="hidden overflow-x-auto overscroll-x-contain sm:block rounded-b-3xl">
+                        <table className="w-full text-left text-sm">
+                          <thead className="border-b border-neutral-200 bg-[#f1f0ed] text-[10px] font-medium uppercase tracking-[0.12em] text-neutral-500">
+                            <tr>
+                              <th className="px-4 py-3">Name</th>
+                              <th className="hidden px-4 py-3 sm:table-cell">
+                                Category
+                              </th>
+                              <th className="px-4 py-3">Price</th>
+                              <th className="hidden px-4 py-3 md:table-cell">
+                                Stock
+                              </th>
+                              <th className="px-4 py-3">Actions</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {products.map(product => (
+                              <tr
+                                key={product.id}
+                                className="border-t border-neutral-200"
+                              >
+                                <td className="px-4 py-4 font-medium text-neutral-950">
+                                  {product.name}
+                                </td>
+                                <td className="hidden px-4 py-3 text-neutral-600 sm:table-cell">
+                                  {product.category?.name ||
+                                    product.categories?.name ||
+                                    "Uncategorised"}
+                                </td>
+                                <td className="px-4 py-3">
+                                  {formatCurrency(product.price)}
+                                </td>
+                                <td className="hidden px-4 py-3 md:table-cell">
+                                  {product.stock}
+                                </td>
+                                <td className="whitespace-nowrap px-4 py-3 space-x-2">
+                                  <button
+                                    type="button"
+                                    className="border border-neutral-300 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.1em] text-neutral-700 hover:bg-neutral-100"
+                                    onClick={() => handleProductSelect(product)}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="border border-red-200 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.1em] text-red-700 hover:bg-red-50"
+                                    onClick={async () => {
+                                      if (!confirm("Delete this product?"))
+                                        return;
+                                      const res = await fetch(
+                                        `${apiUrl}/admin/products/${product.id}`,
+                                        {
+                                          method: "DELETE",
+                                          credentials: "include",
+                                        },
+                                      );
+                                      const data = await res.json();
+                                      if (!res.ok) {
+                                        setError(
+                                          data.error ||
+                                            "Unable to delete product",
+                                        );
+                                        return;
+                                      }
+                                      setSuccess(
+                                        data.message || "Product deleted",
+                                      );
+                                      setProducts(prev =>
+                                        prev.filter(
+                                          item => item.id !== product.id,
+                                        ),
+                                      );
+                                      if (selectedProduct?.id === product.id)
+                                        setSelectedProduct(null);
+                                    }}
+                                  >
+                                    Delete
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -838,86 +935,99 @@ export default function AdminPage() {
             )}
 
             {isProductModalOpen && selectedProduct && (
-              <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6">
-                <div className="flex max-h-[calc(100dvh-3rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl sm:max-h-[calc(100dvh-4rem)]">
-                  <div className="flex shrink-0 items-start justify-between border-b border-neutral-200 px-4 py-4 sm:px-6 sm:py-5">
-                    <div>
-                      <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">
-                        Catalogue editor
-                      </p>
-                      <h3 className="mt-1 text-2xl font-medium tracking-[-0.04em] text-neutral-950">
-                        {selectedProduct.id ? "Edit product" : "Add product"}
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        {selectedProduct.id
-                          ? "Update the product details below."
-                          : "Create a new product in seconds."}
-                      </p>
+              <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 px-3 py-6 sm:items-center sm:px-6">
+                <div className="w-full max-w-xl overflow-hidden rounded-[2rem] border border-neutral-200 bg-white shadow-2xl sm:max-w-2xl">
+                  <div className="border-b border-neutral-200 bg-slate-50 px-5 py-5 sm:px-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                          {selectedProduct.id ? "Edit product" : "Add product"}
+                        </p>
+                        <h3 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-neutral-950">
+                          {selectedProduct.id
+                            ? "Update item details"
+                            : "Add a new item"}
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-neutral-600">
+                          {selectedProduct.id
+                            ? "Tap into the fields below to save catalog changes quickly."
+                            : "Fill in the fields to add a product to your storefront."}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="rounded-full border border-neutral-300 bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-900 transition hover:bg-neutral-50"
+                        onClick={closeProductModal}
+                        disabled={isSavingProduct}
+                      >
+                        Close
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      className="border border-red-300 bg-red-50 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
-                      onClick={closeProductModal}
-                      disabled={isSavingProduct}
-                    >
-                      Close
-                    </button>
                   </div>
-                  <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
-                    <form
-                      onSubmit={saveProduct}
-                      className="space-y-5 pb-4 sm:space-y-6"
-                    >
+
+                  <div className="max-h-[calc(100dvH-10rem)] overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
+                    <form onSubmit={saveProduct} className="space-y-6 pb-6">
                       {error && (
                         <div
-                          className="border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+                          className="rounded-3xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
                           role="alert"
                         >
                           {error}
                         </div>
                       )}
-                      <div>
-                        <label className="text-[10px] font-medium uppercase tracking-[0.14em] text-neutral-600">
-                          Name
-                        </label>
-                        <input
-                          value={selectedProduct.name}
-                          onChange={e =>
-                            setSelectedProduct(prev => ({
-                              ...prev,
-                              name: e.target.value,
-                            }))
-                          }
-                          className="mt-2 w-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900"
-                          required
-                        />
+
+                      <div className="space-y-4 rounded-3xl border border-neutral-200 bg-[#f7f6f2] p-4">
+                        <div>
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-600">
+                            Product name
+                          </label>
+                          <input
+                            value={selectedProduct.name}
+                            onChange={e =>
+                              setSelectedProduct(prev => ({
+                                ...prev,
+                                name: e.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-950 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-600">
+                            Slug / URL key
+                          </label>
+                          <input
+                            value={selectedProduct.slug}
+                            onChange={e =>
+                              setSelectedProduct(prev => ({
+                                ...prev,
+                                slug: e.target.value,
+                              }))
+                            }
+                            placeholder="optional product-slug"
+                            className="mt-2 w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-950 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                          />
+                          <p className="mt-2 text-xs text-neutral-500">
+                            Optional. If blank, a slug is generated from the
+                            name.
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <label className="text-[10px] font-medium uppercase tracking-[0.14em] text-neutral-600">
-                          Slug
-                        </label>
-                        <input
-                          value={selectedProduct.slug}
-                          onChange={e =>
-                            setSelectedProduct(prev => ({
-                              ...prev,
-                              slug: e.target.value,
-                            }))
-                          }
-                          placeholder="optional product-slug"
-                          className="mt-2 w-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900"
-                        />
-                        <p className="mt-2 text-xs text-neutral-500">
-                          Optional. Only lowercase letters, numbers, and single
-                          hyphens are allowed. If empty, a slug is generated
-                          from the product name.
-                        </p>
-                      </div>
-                      <fieldset>
-                        <legend className="text-[10px] font-medium uppercase tracking-[0.14em] text-neutral-600">
-                          Category
-                        </legend>
-                        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+
+                      <div className="space-y-4 rounded-3xl border border-neutral-200 bg-[#f7f6f2] p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-600">
+                              Category
+                            </p>
+                            <p className="mt-1 text-sm text-neutral-600">
+                              Tap to choose the product category.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                           {categories.map((category, categoryIndex) => {
                             const selected =
                               String(selectedProduct.category_id) ===
@@ -937,7 +1047,7 @@ export default function AdminPage() {
                                     category_id: category.id,
                                   }))
                                 }
-                                className={`min-h-12 border px-3 py-3 text-left text-[11px] font-medium uppercase tracking-[0.1em] transition sm:min-h-20 ${selected ? "border-neutral-950 bg-[#171716] text-white" : "border-neutral-300 bg-white text-neutral-700 hover:border-neutral-950"}`}
+                                className={`rounded-3xl border px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.11em] transition ${selected ? "border-neutral-900 bg-neutral-950 text-white" : "border-neutral-300 bg-white text-neutral-700 hover:border-neutral-900"}`}
                                 aria-pressed={selected}
                               >
                                 {category.name}
@@ -946,15 +1056,16 @@ export default function AdminPage() {
                           })}
                         </div>
                         {!categories.length && (
-                          <p className="mt-3 text-sm text-red-600">
+                          <p className="text-sm text-red-600">
                             {categoriesError ||
                               "Categories are loading. Please try again in a moment."}
                           </p>
                         )}
-                      </fieldset>
+                      </div>
+
                       <div className="grid gap-4 sm:grid-cols-2">
-                        <div>
-                          <label className="text-[10px] font-medium uppercase tracking-[0.14em] text-neutral-600">
+                        <div className="space-y-3 rounded-3xl border border-neutral-200 bg-[#f7f6f2] p-4">
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-600">
                             Initial price
                           </label>
                           <input
@@ -972,11 +1083,11 @@ export default function AdminPage() {
                                 ),
                               }))
                             }
-                            className="mt-2 w-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900"
+                            className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-950 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
                           />
                         </div>
-                        <div>
-                          <label className="text-[10px] font-medium uppercase tracking-[0.14em] text-neutral-600">
+                        <div className="space-y-3 rounded-3xl border border-neutral-200 bg-[#f7f6f2] p-4">
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-600">
                             Discounted price
                           </label>
                           <input
@@ -994,30 +1105,30 @@ export default function AdminPage() {
                                 ),
                               }))
                             }
-                            className="mt-2 w-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900"
+                            className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-950 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
                             required
                           />
+                          <p className="text-xs text-neutral-500">
+                            Keeps the sale price at or below the list price.
+                          </p>
                         </div>
                       </div>
-                      <p className="-mt-2 text-xs text-neutral-500">
-                        The discounted price is automatically kept at or below
-                        the initial price.
-                      </p>
-                      <div>
-                        <label className="text-[10px] font-medium uppercase tracking-[0.14em] text-neutral-600">
+
+                      <div className="space-y-4 rounded-3xl border border-neutral-200 bg-[#f7f6f2] p-4">
+                        <label className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-600">
                           Product image
                         </label>
-                        <div className="mt-2 space-y-3">
+                        <div className="space-y-3">
                           <input
                             type="file"
                             accept="image/jpeg,image/png,image/webp,image/avif"
                             onChange={uploadProductImage}
-                            className="w-full border border-dashed border-neutral-300 px-4 py-3 text-sm text-neutral-900"
+                            className="w-full rounded-3xl border border-dashed border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900"
                           />
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-neutral-500">
                             {isUploadingImage
                               ? "Uploading image..."
-                              : "JPEG, PNG, WebP, or AVIF — up to 5MB and 2048×2048. Stored as optimized WebP."}
+                              : "Use JPEG, PNG, WebP, or AVIF up to 5MB."}
                           </p>
                           <input
                             value={selectedProduct.image_name || ""}
@@ -1028,48 +1139,49 @@ export default function AdminPage() {
                               }))
                             }
                             placeholder="product.jpg or https://..."
-                            className="w-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900"
+                            className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900"
                           />
                         </div>
                       </div>
-                      <div>
-                        <label className="text-[10px] font-medium uppercase tracking-[0.14em] text-neutral-600">
-                          Stock
+
+                      <div className="space-y-4 rounded-3xl border border-neutral-200 bg-[#f7f6f2] p-4">
+                        <label className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-600">
+                          Stock & description
                         </label>
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={selectedProduct.stock}
-                          onChange={e =>
-                            setSelectedProduct(prev => ({
-                              ...prev,
-                              stock: Number(e.target.value),
-                            }))
-                          }
-                          className="mt-2 w-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900"
-                        />
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            value={selectedProduct.stock}
+                            onChange={e =>
+                              setSelectedProduct(prev => ({
+                                ...prev,
+                                stock: Number(e.target.value),
+                              }))
+                            }
+                            className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                            placeholder="Stock"
+                          />
+                          <textarea
+                            value={selectedProduct.description}
+                            onChange={e =>
+                              setSelectedProduct(prev => ({
+                                ...prev,
+                                description: e.target.value,
+                              }))
+                            }
+                            rows={4}
+                            placeholder="Product description"
+                            className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="text-[10px] font-medium uppercase tracking-[0.14em] text-neutral-600">
-                          Description
-                        </label>
-                        <textarea
-                          value={selectedProduct.description}
-                          onChange={e =>
-                            setSelectedProduct(prev => ({
-                              ...prev,
-                              description: e.target.value,
-                            }))
-                          }
-                          rows={4}
-                          className="mt-2 w-full border border-neutral-300 px-4 py-3 text-sm text-neutral-900"
-                        />
-                      </div>
+
                       <button
                         type="submit"
                         disabled={isSavingProduct || isUploadingImage}
-                        className="sticky bottom-0 w-full bg-[#171716] px-5 py-4 text-[11px] font-medium uppercase tracking-[0.13em] text-white shadow-[0_-8px_20px_rgba(255,255,255,0.92)] hover:bg-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-400"
+                        className="w-full rounded-3xl bg-[#171716] px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-white shadow-[0_14px_30px_rgba(0,0,0,0.12)] transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-400"
                       >
                         {isSavingProduct ? "Saving product…" : "Save product"}
                       </button>
