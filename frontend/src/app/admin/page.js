@@ -702,8 +702,11 @@ export default function AdminPage() {
                         New product
                       </button>
                     </div>
-                    <div className="min-w-0 overflow-x-auto overscroll-x-contain">
-                      <table className="w-full text-left text-sm">
+                    <div className="min-w-0 overflow-x-auto overscroll-x-contain rounded-3xl border border-neutral-200 bg-white shadow-sm">
+                      <div className="px-4 py-3 text-xs text-neutral-500 sm:hidden">
+                        Swipe left to view all columns.
+                      </div>
+                      <table className="min-w-max w-full table-auto text-left text-sm">
                         <thead className="border-b border-neutral-200 bg-[#f1f0ed] text-[10px] font-medium uppercase tracking-[0.12em] text-neutral-500">
                           <tr>
                             <th className="px-4 py-3">Name</th>

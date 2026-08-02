@@ -1,7 +1,24 @@
 import { NextResponse } from "next/server";
 
-const PRODUCT_IMAGE_HOST = "fzwejabpgytmodmoxcfy.supabase.co";
-const PRODUCT_IMAGE_PATH = "/storage/v1/object/public/product-images/";
+const PRODUCT_IMAGE_PATH_PREFIX = "/storage/v1/object/public/";
+const PRODUCT_IMAGE_BUCKETS = ["product-images", "products"];
+
+function isSupportedProductImageUrl(imageUrl) {
+  if (imageUrl.protocol !== "https:") return false;
+  if (!imageUrl.pathname.startsWith(PRODUCT_IMAGE_PATH_PREFIX)) return false;
+
+  const hostname = imageUrl.hostname.toLowerCase();
+  const isSupabaseStorageHost =
+    hostname === "supabase.co" ||
+    hostname.endsWith(".supabase.co") ||
+    hostname.includes("supabase");
+
+  if (!isSupabaseStorageHost) return false;
+
+  return PRODUCT_IMAGE_BUCKETS.some(bucket =>
+    imageUrl.pathname.startsWith(`${PRODUCT_IMAGE_PATH_PREFIX}${bucket}/`),
+  );
+}
 
 export async function GET(request) {
   const requestedUrl = new URL(request.url).searchParams.get("url");
@@ -16,11 +33,7 @@ export async function GET(request) {
     return NextResponse.json({ error: "Invalid image URL" }, { status: 400 });
   }
 
-  if (
-    imageUrl.protocol !== "https:" ||
-    imageUrl.hostname !== PRODUCT_IMAGE_HOST ||
-    !imageUrl.pathname.startsWith(PRODUCT_IMAGE_PATH)
-  ) {
+  if (!isSupportedProductImageUrl(imageUrl)) {
     return NextResponse.json(
       { error: "Unsupported image URL" },
       { status: 400 },

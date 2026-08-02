@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProductImageSrc } from "../../../lib/product-image";
@@ -16,10 +15,18 @@ function getSafeImageUrl(image?: string) {
 
   try {
     const url = new URL(image);
-    const allowedHosts = [
-      "images.unsplash.com",
-      "fzwejabpgytmodmoxcfy.supabase.co",
-    ];
+    const configuredSupabaseHost =
+      process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "";
+    const allowedHosts = ["images.unsplash.com"];
+
+    if (configuredSupabaseHost) {
+      try {
+        allowedHosts.push(new URL(configuredSupabaseHost).hostname);
+      } catch {
+        // Ignore invalid Supabase URL configuration.
+      }
+    }
+
     return allowedHosts.includes(url.hostname) ? image : FALLBACK_IMAGE;
   } catch {
     return FALLBACK_IMAGE;
@@ -199,12 +206,13 @@ export default async function CategoryPage({
                 className="group overflow-hidden border border-neutral-200 bg-white transition hover:border-neutral-400"
               >
                 <div className="relative aspect-square bg-[#f1f0ed]">
-                  <Image
-                    src={getProductImageSrc(getSafeImageUrl(product.images?.[0]))}
+                  <img
+                    src={getProductImageSrc(
+                      getSafeImageUrl(product.images?.[0]),
+                    )}
                     alt={product.name}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover"
+                    className="h-full w-full object-cover"
+                    loading="lazy"
                   />
                 </div>
                 <div className="p-5">

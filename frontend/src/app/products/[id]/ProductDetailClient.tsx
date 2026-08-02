@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowLeft, ShoppingBag } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -171,13 +170,11 @@ export default function ProductDetailClient({
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="overflow-hidden border border-neutral-200 bg-[#f1f0ed] p-3">
             <div className="relative h-105 md:h-140 w-full overflow-hidden">
-              <Image
+              <img
                 src={getProductImageSrc(imageUrl)}
                 alt={product.name}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-                className="object-cover"
+                className="h-full w-full object-cover"
+                loading="eager"
               />
             </div>
           </div>
