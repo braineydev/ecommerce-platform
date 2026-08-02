@@ -703,7 +703,7 @@ export default function AdminPage() {
                       </button>
                     </div>
                     <div className="rounded-4xl border border-neutral-200 bg-white shadow-sm">
-                      <div className="px-5 py-4 sm:hidden">
+                      <div className="px-5 py-4 md:hidden">
                         <div className="flex items-center justify-between gap-4">
                           <div>
                             <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">
@@ -719,7 +719,7 @@ export default function AdminPage() {
                         </div>
                       </div>
 
-                      <div className="space-y-4 p-4 sm:hidden">
+                      <div className="space-y-4 p-4 md:hidden">
                         {products.map(product => (
                           <div
                             key={product.id}
@@ -801,7 +801,7 @@ export default function AdminPage() {
                         ))}
                       </div>
 
-                      <div className="hidden overflow-x-auto overscroll-x-contain sm:block rounded-b-3xl">
+                      <div className="hidden overflow-x-auto overscroll-x-contain md:block rounded-b-3xl">
                         <table className="w-full text-left text-sm">
                           <thead className="border-b border-neutral-200 bg-[#f1f0ed] text-[10px] font-medium uppercase tracking-[0.12em] text-neutral-500">
                             <tr>
@@ -936,7 +936,7 @@ export default function AdminPage() {
 
             {isProductModalOpen && selectedProduct && (
               <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 px-3 py-6 sm:items-center sm:px-6">
-                <div className="w-full max-w-xl overflow-hidden rounded-[2rem] border border-neutral-200 bg-white shadow-2xl sm:max-w-2xl">
+                <div className="w-full max-w-full overflow-hidden rounded-[2rem] border border-neutral-200 bg-white shadow-2xl sm:max-w-2xl">
                   <div className="border-b border-neutral-200 bg-slate-50 px-5 py-5 sm:px-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
