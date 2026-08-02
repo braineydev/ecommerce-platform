@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCart } from "../../context/CartContext";
+import { getProductPrimaryImage } from "../../lib/product-image-utils";
 
 function seededNumberFromString(s) {
   let h = 0;
@@ -107,11 +108,10 @@ export default function CartPage() {
                 <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden bg-[#f1f0ed] sm:h-36 sm:w-36">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={
-                      item.images?.[0] ||
-                      item.image ||
-                      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"
-                    }
+                    src={getProductPrimaryImage(
+                      item,
+                      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80",
+                    )}
                     alt={item.name}
                     className="h-full w-full object-cover"
                   />

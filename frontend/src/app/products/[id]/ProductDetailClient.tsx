@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useCart } from "../../../context/CartContext";
 import { getProductImageSrc } from "../../../lib/product-image";
+import { getProductPrimaryImage } from "../../../lib/product-image-utils";
 
 type ProductDetailClientProps = {
   product: {
@@ -55,13 +56,19 @@ function getSafeImageUrl(image?: string) {
 
   try {
     const url = new URL(image);
-    const allowedHosts = [
-      "images.unsplash.com",
-      "fzwejabpgytmodmoxcfy.supabase.co",
-    ];
-    return allowedHosts.includes(url.hostname) ? image : FALLBACK_IMAGE;
+    const hostname = url.hostname.toLowerCase();
+    const isSupabaseStorageUrl =
+      (hostname === "supabase.co" || hostname.endsWith(".supabase.co")) &&
+      url.pathname.includes("/storage/v1/object/public/");
+
+    return isSupabaseStorageUrl || hostname === "images.unsplash.com"
+      ? image
+      : FALLBACK_IMAGE;
   } catch {
-    return FALLBACK_IMAGE;
+    const trimmedValue = String(image).trim();
+    if (!trimmedValue) return FALLBACK_IMAGE;
+
+    return trimmedValue;
   }
 }
 
@@ -92,13 +99,15 @@ export default function ProductDetailClient({
     initialPrice > 0
       ? initialPrice
       : Number(product.price || 0) * (1 + discount / 100);
-  const productImages =
-    product.images?.filter(Boolean).length
-      ? product.images.filter(Boolean)
-      : product.image_name
-        ? [product.image_name]
-        : [];
-  const imageUrl = getSafeImageUrl(productImages[0]);
+  const productImages = Array.isArray(product.images)
+    ? product.images.filter(Boolean)
+    : [];
+  const primaryImage = getProductPrimaryImage(product, productImages[0]);
+  const productImageCandidates = [
+    ...productImages,
+    ...(product.image_name ? [product.image_name] : []),
+  ];
+  const imageUrl = getSafeImageUrl(primaryImage || productImageCandidates[0]);
 
   const schema = useMemo(
     () => ({
@@ -134,7 +143,8 @@ export default function ProductDetailClient({
       name: product.name,
       price: discountedPrice,
       quantity,
-      image: productImages[0],
+      image: primaryImage || productImageCandidates[0] || null,
+      images: productImages.length > 0 ? productImages : undefined,
     });
   };
 
