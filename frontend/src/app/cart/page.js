@@ -7,21 +7,28 @@ import { useEffect, useState } from "react";
 import { useCart } from "../../context/CartContext";
 import { getProductPrimaryImage } from "../../lib/product-image-utils";
 
-function seededNumberFromString(s) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
-  return Math.abs(h);
-}
-
-function getDiscountPercent(id) {
-  const seed = seededNumberFromString(String(id));
-  return Math.ceil(5 + (seed % 26));
-}
-
 function getRating(id) {
-  const seed = seededNumberFromString(String(id));
+  let h = 0;
+  for (let i = 0; i < String(id).length; i++) {
+    h = (h << 5) - h + String(id).charCodeAt(i);
+  }
+  const seed = Math.abs(h);
   const r = (seed % 401) / 1000;
   return +(4.4 + r).toFixed(1);
+}
+
+function getDiscountPercent(item) {
+  const initialPrice = Number(item.initial_price ?? item.price ?? 0);
+  const discountedPrice = Number(item.discounted_price ?? item.price ?? 0);
+
+  if (initialPrice > discountedPrice && initialPrice > 0) {
+    return Math.max(
+      1,
+      Math.round(((initialPrice - discountedPrice) / initialPrice) * 100),
+    );
+  }
+
+  return 0;
 }
 
 export default function CartPage() {
@@ -117,10 +124,10 @@ export default function CartPage() {
                   />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent to-slate-950/10" />
                   {(() => {
-                    const discount = getDiscountPercent(item.id);
+                    const discount = getDiscountPercent(item);
                     return (
                       <div className="absolute left-1.5 top-1.5 inline-flex bg-neutral-950 px-2 py-1 text-[9px] font-medium uppercase tracking-[0.1em] text-white sm:left-2 sm:top-2 sm:text-[10px]">
-                        {discount}% OFF
+                        {discount > 0 ? `${discount}% OFF` : "SALE"}
                       </div>
                     );
                   })()}
@@ -172,15 +179,15 @@ export default function CartPage() {
                   <p className="mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs text-neutral-500 sm:mb-4 sm:text-sm">
                     <span>Ksh. {Number(item.price).toLocaleString()} each</span>
                     {(() => {
-                      const discount = getDiscountPercent(item.id);
-                      const original = Math.round(
-                        Number(item.price) * (1 + discount / 100),
+                      const discount = getDiscountPercent(item);
+                      const original = Number(
+                        item.initial_price ?? item.discounted_price ?? item.price ?? 0,
                       );
-                      return (
+                      return discount > 0 ? (
                         <span className="text-xs text-gray-400 line-through">
-                          Ksh. {original.toLocaleString()}
+                          Ksh. {Math.round(original).toLocaleString()}
                         </span>
-                      );
+                      ) : null;
                     })()}
                   </p>
 

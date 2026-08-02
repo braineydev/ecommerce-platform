@@ -31,45 +31,16 @@ type ProductDetailClientProps = {
   discount: number;
 };
 
-function seededNumberFromString(s: string) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
-  return Math.abs(h);
-}
-
-function getDiscountPercent(id: string | number) {
-  const seed = seededNumberFromString(String(id));
-  return Math.ceil(5 + (seed % 26));
-}
-
-function getRating(id: string | number) {
-  const seed = seededNumberFromString(String(id));
-  const r = (seed % 401) / 1000;
-  return +(4.4 + r).toFixed(1);
-}
-
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=80";
 
 function getSafeImageUrl(image?: string) {
   if (!image) return FALLBACK_IMAGE;
 
-  try {
-    const url = new URL(image);
-    const hostname = url.hostname.toLowerCase();
-    const isSupabaseStorageUrl =
-      (hostname === "supabase.co" || hostname.endsWith(".supabase.co")) &&
-      url.pathname.includes("/storage/v1/object/public/");
+  const trimmedValue = String(image).trim();
+  if (!trimmedValue) return FALLBACK_IMAGE;
 
-    return isSupabaseStorageUrl || hostname === "images.unsplash.com"
-      ? image
-      : FALLBACK_IMAGE;
-  } catch {
-    const trimmedValue = String(image).trim();
-    if (!trimmedValue) return FALLBACK_IMAGE;
-
-    return trimmedValue;
-  }
+  return trimmedValue;
 }
 
 export default function ProductDetailClient({
@@ -95,6 +66,14 @@ export default function ProductDetailClient({
     descriptionText.length > 140 && !showFullDescription
       ? `${descriptionText.slice(0, 140)}...`
       : descriptionText;
+  const computedDiscountPercent =
+    initialPrice > discountedPrice && initialPrice > 0
+      ? Math.max(
+          1,
+          Math.round(((initialPrice - discountedPrice) / initialPrice) * 100),
+        )
+      : 0;
+  const displayDiscountPercent = computedDiscountPercent || discount;
   const originalPrice =
     initialPrice > 0
       ? initialPrice
@@ -129,6 +108,7 @@ export default function ProductDetailClient({
     [
       availableStock,
       descriptionText,
+      discountedPrice,
       imageUrl,
       productImages,
       product.name,
@@ -142,6 +122,8 @@ export default function ProductDetailClient({
       id: product.id,
       name: product.name,
       price: discountedPrice,
+      initial_price: initialPrice,
+      discounted_price: discountedPrice,
       quantity,
       image: primaryImage || productImageCandidates[0] || null,
       images: productImages.length > 0 ? productImages : undefined,
@@ -224,9 +206,9 @@ export default function ProductDetailClient({
                   </svg>
                   <span>{rating}</span>
                 </div>
-                {discount > 0 && (
+                {displayDiscountPercent > 0 && (
                   <span className="inline-flex items-center border border-[#c9ddd2] bg-[#edf5f0] px-3 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-[#58736a]">
-                    Save {discount}%
+                    Save {displayDiscountPercent}%
                   </span>
                 )}
               </div>
@@ -256,7 +238,7 @@ export default function ProductDetailClient({
                   <p className="mt-1 text-3xl font-medium tracking-[-0.04em] text-neutral-950">
                     Ksh. {discountedPrice.toLocaleString()}
                   </p>
-                  {discount > 0 && (
+                  {displayDiscountPercent > 0 && (
                     <p className="mt-1 text-sm text-gray-400 line-through">
                       Ksh. {Math.round(originalPrice).toLocaleString()}
                     </p>

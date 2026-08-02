@@ -13,6 +13,8 @@ type Product = {
   slug?: string;
   description?: string;
   price: number | string;
+  initial_price?: number | string;
+  discounted_price?: number | string;
   stock?: number;
   images?: string[];
   category?: { name?: string; slug?: string } | string | null;
@@ -31,9 +33,20 @@ function seededNumberFromString(s: string) {
   return Math.abs(h);
 }
 
-function getDiscountPercent(id: string | number) {
-  const seed = seededNumberFromString(String(id));
-  return Math.ceil(5 + (seed % 26));
+function getDiscountPercent(product: Product) {
+  const initialPrice = Number(product.initial_price ?? product.price ?? 0);
+  const discountedPrice = Number(
+    product.discounted_price ?? product.price ?? 0,
+  );
+
+  if (initialPrice > discountedPrice && initialPrice > 0) {
+    return Math.max(
+      1,
+      Math.round(((initialPrice - discountedPrice) / initialPrice) * 100),
+    );
+  }
+
+  return 0;
 }
 
 function getRating(id: string | number) {
@@ -122,7 +135,7 @@ export default async function ProductDetailPage({
       ? product.category.slug
       : null;
   const rating = getRating(product.id);
-  const discount = getDiscountPercent(product.id);
+  const discount = getDiscountPercent(product);
 
   return (
     <ProductDetailClient
