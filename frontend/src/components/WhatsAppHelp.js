@@ -19,13 +19,11 @@ export default function WhatsAppHelp() {
     const finalMessage =
       message && message.trim()
         ? message.trim()
-        : "Hi Tripple Ore! I have an inquiry about your products.";
+        : "Hello TRIPPLE ORE, I have an inquiry about your products.";
     const encodedMessage = encodeURIComponent(finalMessage);
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, "")}?text=${encodedMessage}`;
-    // Open in a new tab/window and then close the modal for a smooth UX
     const newWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
     if (!newWindow) {
-      // If popup blocked, fallback to same-tab navigation
       window.location.href = whatsappUrl;
     }
     setIsOpen(false);
@@ -75,6 +73,7 @@ export default function WhatsAppHelp() {
           </div>
 
           <button
+            type="button"
             onClick={handleStartChat}
             className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#171716] px-4 py-3.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-[#111111]"
           >
@@ -85,6 +84,7 @@ export default function WhatsAppHelp() {
       )}
 
       <button
+        type="button"
         onClick={handleOpen}
         className={`relative flex h-14 w-14 items-center justify-center rounded-full bg-green-500 p-4 text-white shadow-[0_20px_55px_rgba(16,185,129,0.32)] transition duration-200 ease-in-out ${
           isOpen ? "scale-105" : "hover:scale-[1.05]"

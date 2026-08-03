@@ -324,6 +324,7 @@ export default function ProductDetailClient({
               </div>
 
               <button
+                type="button"
                 onClick={handleStartChat}
                 className="mt-3 flex w-full items-center justify-center bg-[#25D366] px-6 py-4 text-[11px] font-medium uppercase tracking-[0.13em] text-white shadow-[0_12px_28px_rgba(37,211,102,0.22)] transition hover:bg-[#20ba5a]"
               >

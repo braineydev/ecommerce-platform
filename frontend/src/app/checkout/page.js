@@ -64,8 +64,18 @@ export default function CheckoutPage() {
       "",
       `Order Total: Ksh. ${total.toLocaleString()}`,
       "",
-      "Kindly confirm my order and delivery arrangements. Thank you.",
+      "Kindly confirm my order and the delivery arrangements. Thank you.",
     ].join("\n");
+  };
+
+  const openWhatsAppUrl = whatsappUrl => {
+    if (typeof window === "undefined") return;
+    try {
+      const tab = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+      if (!tab) window.location.href = whatsappUrl;
+    } catch {
+      window.location.href = whatsappUrl;
+    }
   };
 
   const handlePlaceOrder = async e => {
@@ -78,19 +88,22 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
 
+    const message = buildWhatsAppMessage();
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(message)}`;
+
+    let newWindow = null;
+    if (typeof window !== "undefined") {
+      const placeholderHtml = encodeURIComponent(
+        `<html><head><title>Preparing WhatsApp...</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;background:#f5f5f5;color:#111;"><div style="text-align:center;"><p style="font-size:1rem;margin:0;">Preparing WhatsApp message...</p></div></body></html>`,
+      );
+      newWindow = window.open(
+        `data:text/html,${placeholderHtml}`,
+        "_blank",
+        "noopener,noreferrer",
+      );
+    }
+
     try {
-      const message = buildWhatsAppMessage();
-      const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(message)}`;
-
-      // Open a blank window synchronously so popup blockers allow navigation later
-      let newWindow = null;
-      if (typeof window !== "undefined") {
-        newWindow = window.open("", "_blank", "noopener,noreferrer");
-      }
-
-      // Create the order on the server which will decrement stock atomically.
-      // We only navigate to WhatsApp after the order creation succeeds so that
-      // stock is updated when the customer actually initiates the WhatsApp order.
       const resp = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -105,38 +118,32 @@ export default function CheckoutPage() {
 
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
-        throw new Error(err.error || "Failed to create order");
+        const errorMessage = err.error || "Failed to create order";
+        if (newWindow) {
+          try {
+            newWindow.close();
+          } catch {}
+        }
+        throw new Error(errorMessage);
       }
 
-      // Navigate the previously opened window (if any) to WhatsApp with the message.
       if (newWindow) {
         try {
           newWindow.location.href = whatsappUrl;
-        } catch (err) {
-          try {
-            // try opening a new tab with the URL
-            const tab = window.open(
-              whatsappUrl,
-              "_blank",
-              "noopener,noreferrer",
-            );
-            if (!tab) window.location.href = whatsappUrl;
-          } catch {
-            window.location.href = whatsappUrl;
-          }
+        } catch {
+          openWhatsAppUrl(whatsappUrl);
         }
       } else {
-        // If the blank window was blocked, attempt to open WhatsApp directly in a new tab.
-        try {
-          const tab = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-          if (!tab) window.location.href = whatsappUrl;
-        } catch {
-          window.location.href = whatsappUrl;
-        }
+        openWhatsAppUrl(whatsappUrl);
       }
 
       setOrderSuccess(true);
     } catch (error) {
+      if (newWindow) {
+        try {
+          newWindow.close();
+        } catch {}
+      }
       console.error("Checkout Error:", error.message);
       alert(`Checkout failed: ${error.message}`);
     } finally {
