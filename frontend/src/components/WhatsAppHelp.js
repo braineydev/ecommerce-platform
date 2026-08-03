@@ -9,7 +9,7 @@ const DEFAULT_MESSAGE =
 
 export default function WhatsAppHelp() {
   const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(DEFAULT_MESSAGE);
 
   const handleOpen = () => {
     setIsOpen(open => !open);

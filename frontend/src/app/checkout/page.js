@@ -113,11 +113,22 @@ export default function CheckoutPage() {
         try {
           newWindow.location.href = whatsappUrl;
         } catch (err) {
-          // If navigation fails, fallback to setting top-level location
-          window.location.href = whatsappUrl;
+          try {
+            // try opening a new tab with the URL
+            const tab = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+            if (!tab) window.location.href = whatsappUrl;
+          } catch {
+            window.location.href = whatsappUrl;
+          }
         }
       } else {
-        window.location.href = whatsappUrl;
+        // If the blank window was blocked, attempt to open WhatsApp directly in a new tab.
+        try {
+          const tab = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+          if (!tab) window.location.href = whatsappUrl;
+        } catch {
+          window.location.href = whatsappUrl;
+        }
       }
 
       setOrderSuccess(true);
