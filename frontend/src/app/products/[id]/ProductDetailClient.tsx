@@ -129,6 +129,36 @@ export default function ProductDetailClient({
     });
   };
 
+  const handleBuyNow = () => {
+    if (availableStock < 1) return;
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: discountedPrice,
+      initial_price: initialPrice,
+      discounted_price: discountedPrice,
+      quantity,
+      image: primaryImage || productImageCandidates[0] || null,
+      images: productImages.length > 0 ? productImages : undefined,
+    });
+    router.push("/cart");
+  };
+
+  const WHATSAPP_NUMBER = "254721469696";
+  const DEFAULT_WHATSAPP_MESSAGE = `Hello TRIPPLE ORE, I need help with this product: ${product.name}`;
+  const handleStartChat = () => {
+    const encodedMessage = encodeURIComponent(DEFAULT_WHATSAPP_MESSAGE);
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+    if (typeof window !== "undefined") {
+      const newWindow = window.open(
+        whatsappUrl,
+        "_blank",
+        "noopener,noreferrer",
+      );
+      if (!newWindow) window.location.href = whatsappUrl;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#fcfcfb]">
       <script
@@ -274,19 +304,27 @@ export default function ProductDetailClient({
                 </div>
               </div>
 
-              <button
-                onClick={handleAddToCart}
-                disabled={availableStock < 1}
-                className="mt-6 hidden w-full items-center justify-center bg-[#171716] px-6 py-4 text-[11px] font-medium uppercase tracking-[0.13em] text-white transition hover:bg-neutral-700 md:flex lg:mt-6"
-              >
-                <ShoppingBag size={18} strokeWidth={1.7} className="mr-2" />{" "}
-                {availableStock < 1 ? "Out of stock" : "Add to cart"}
-              </button>
+              <div className="mt-6 hidden md:flex lg:mt-6 gap-3">
+                <button
+                  onClick={handleAddToCart}
+                  disabled={availableStock < 1}
+                  className="flex-1 inline-flex items-center justify-center bg-[#171716] px-6 py-4 text-[11px] font-medium uppercase tracking-[0.13em] text-white transition hover:bg-neutral-700 disabled:bg-neutral-400"
+                >
+                  <ShoppingBag size={18} strokeWidth={1.7} className="mr-2" />
+                  {availableStock < 1 ? "Out of stock" : "Add to cart"}
+                </button>
 
-              <a
-                href="https://wa.me/254721469696"
-                target="_blank"
-                rel="noopener noreferrer"
+                <button
+                  onClick={handleBuyNow}
+                  disabled={availableStock < 1}
+                  className="flex-1 inline-flex items-center justify-center bg-[#d97706] px-6 py-4 text-[11px] font-medium uppercase tracking-[0.13em] text-white transition hover:bg-[#b45309] disabled:bg-neutral-400"
+                >
+                  Buy Now
+                </button>
+              </div>
+
+              <button
+                onClick={handleStartChat}
                 className="mt-3 flex w-full items-center justify-center bg-[#25D366] px-6 py-4 text-[11px] font-medium uppercase tracking-[0.13em] text-white shadow-[0_12px_28px_rgba(37,211,102,0.22)] transition hover:bg-[#20ba5a]"
               >
                 <svg
@@ -297,21 +335,31 @@ export default function ProductDetailClient({
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004a9.87 9.87 0 00-4.935 1.244c-1.5.867-2.798 2.154-3.632 3.761-1.647 3.282-.235 7.14 2.903 8.781 1.402.806 2.935 1.213 4.504 1.213 1.614 0 3.184-.436 4.605-1.284 3.122-1.837 4.56-5.66 3.233-8.938-.766-1.937-2.165-3.354-3.802-4.131-1.639-.778-3.535-.77-5.143.007m8.989-3.738h-.007a12.016 12.016 0 00-11.405 6.546 11.99 11.99 0 006.095 15.648 11.993 11.993 0 009.381-1.697 12.005 12.005 0 004.094-9.12 11.993 11.993 0 00-8.158-11.377m0-1.439A13.45 13.45 0 0012 .5C5.597.5.5 5.597.5 12S5.597 23.5 12 23.5s11.5-5.097 11.5-11.5S18.403.5 12 .5z" />
                 </svg>
                 WhatsApp Help
-              </a>
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-200 bg-[#fcfcfb]/95 p-3 backdrop-blur md:hidden">
-        <button
-          onClick={handleAddToCart}
-          disabled={availableStock < 1}
-          className="flex w-full items-center justify-center bg-[#171716] px-6 py-4 text-[11px] font-medium uppercase tracking-[0.13em] text-white transition hover:bg-neutral-700 disabled:bg-neutral-400"
-        >
-          <ShoppingBag size={18} strokeWidth={1.7} className="mr-2" />
-          {availableStock < 1 ? "Out of stock" : "Add to cart"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleAddToCart}
+            disabled={availableStock < 1}
+            className="flex-1 flex items-center justify-center bg-[#171716] px-6 py-4 text-[11px] font-medium uppercase tracking-[0.13em] text-white transition hover:bg-neutral-700 disabled:bg-neutral-400"
+          >
+            <ShoppingBag size={18} strokeWidth={1.7} className="mr-2" />
+            {availableStock < 1 ? "Out of stock" : "Add to cart"}
+          </button>
+
+          <button
+            onClick={handleBuyNow}
+            disabled={availableStock < 1}
+            className="flex-1 flex items-center justify-center bg-[#d97706] px-6 py-4 text-[11px] font-medium uppercase tracking-[0.13em] text-white transition hover:bg-[#b45309] disabled:bg-neutral-400"
+          >
+            Buy Now
+          </button>
+        </div>
       </div>
     </div>
   );
