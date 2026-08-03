@@ -42,6 +42,11 @@ export const metadata: Metadata = {
     title: "TRIPPLE ORE",
     description: "Discover thoughtful finds at TRIPPLE ORE.",
   },
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
   robots: { index: true, follow: true },
 };
 
