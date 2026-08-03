@@ -719,11 +719,11 @@ export default function AdminPage() {
                         </div>
                       </div>
 
-                      <div className="space-y-4 px-4 py-4 md:hidden">
+                      <div className="space-y-4 px-4 py-4 md:hidden max-w-[min(100%,420px)] mx-auto">
                         {products.map(product => (
                           <div
                             key={product.id}
-                            className="rounded-3xl border border-neutral-200 bg-[#f9faf8] p-4 shadow-sm overflow-hidden"
+                            className="rounded-3xl border border-neutral-200 bg-[#f9faf8] p-3 shadow-sm overflow-hidden"
                           >
                             <div className="flex items-start justify-between gap-4">
                               <div className="min-w-0">
@@ -746,7 +746,7 @@ export default function AdminPage() {
                               </div>
                             </div>
 
-                            <div className="mt-4 flex flex-wrap gap-2">
+                              <div className="mt-3 flex flex-wrap gap-2">
                               <span className="inline-flex items-center rounded-full bg-[#eef7f2] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
                                 {product.stock > 20
                                   ? "Plenty"
@@ -759,17 +759,17 @@ export default function AdminPage() {
                               </span>
                             </div>
 
-                            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                            <div className="mt-3 grid gap-2 sm:grid-cols-2">
                               <button
                                 type="button"
-                                className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm font-semibold uppercase tracking-[0.11em] text-neutral-950 transition hover:border-neutral-400 hover:bg-neutral-50"
+                                className="w-full rounded-3xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold uppercase tracking-[0.11em] text-neutral-950 transition hover:border-neutral-400 hover:bg-neutral-50"
                                 onClick={() => handleProductSelect(product)}
                               >
                                 Edit product
                               </button>
                               <button
                                 type="button"
-                                className="w-full rounded-3xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold uppercase tracking-[0.11em] text-red-700 transition hover:bg-red-100"
+                                className="w-full rounded-3xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold uppercase tracking-[0.11em] text-red-700 transition hover:bg-red-100"
                                 onClick={async () => {
                                   if (!confirm("Delete this product?")) return;
                                   const res = await fetch(
@@ -935,8 +935,8 @@ export default function AdminPage() {
             )}
 
             {isProductModalOpen && selectedProduct && (
-              <div className="fixed inset-0 z-60 flex items-end justify-center bg-black/40 px-4 py-6 sm:items-center sm:px-6">
-                <div className="w-full max-w-full sm:max-w-2xl overflow-hidden rounded-4xl border border-neutral-200 bg-white shadow-2xl sm:mx-0">
+              <div className="fixed inset-0 z-60 flex items-end justify-center bg-black/40 px-4 py-6 sm:items-center sm:px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+                <div className="w-full max-w-[min(100%,420px)] sm:max-w-2xl overflow-hidden rounded-4xl border border-neutral-200 bg-white shadow-2xl sm:mx-0 mx-auto">
                   <div className="border-b border-neutral-200 bg-slate-50 px-4 py-5 sm:px-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
@@ -965,7 +965,7 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
+                  <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
                     <form onSubmit={saveProduct} className="space-y-6 pb-6">
                       {error && (
                         <div
@@ -976,7 +976,7 @@ export default function AdminPage() {
                         </div>
                       )}
 
-                      <div className="space-y-4 rounded-3xl border border-neutral-200 bg-[#f7f6f2] p-4">
+                      <div className="space-y-4 rounded-3xl border border-neutral-200 bg-[#f7f6f2] p-3">
                         <div>
                           <label className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-600">
                             Product name
@@ -1047,7 +1047,7 @@ export default function AdminPage() {
                                     category_id: category.id,
                                   }))
                                 }
-                                className={`rounded-3xl border px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.11em] transition truncate ${selected ? "border-neutral-900 bg-neutral-950 text-white" : "border-neutral-300 bg-white text-neutral-700 hover:border-neutral-900"}`}
+                                className={`rounded-3xl border px-3 py-2 text-left text-sm font-semibold uppercase tracking-[0.11em] transition truncate ${selected ? "border-neutral-900 bg-neutral-950 text-white" : "border-neutral-300 bg-white text-neutral-700 hover:border-neutral-900"}`}
                                 aria-pressed={selected}
                               >
                                 {category.name}
@@ -1063,8 +1063,8 @@ export default function AdminPage() {
                         )}
                       </div>
 
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-3 rounded-3xl border border-neutral-200 bg-[#f7f6f2] p-4">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="space-y-3 rounded-3xl border border-neutral-200 bg-[#f7f6f2] p-3">
                           <label className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-600">
                             Initial price
                           </label>
@@ -1083,7 +1083,7 @@ export default function AdminPage() {
                                 ),
                               }))
                             }
-                            className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-950 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                            className="w-full rounded-3xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-950 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
                           />
                         </div>
                         <div className="space-y-3 rounded-3xl border border-neutral-200 bg-[#f7f6f2] p-4">
@@ -1181,7 +1181,7 @@ export default function AdminPage() {
                       <button
                         type="submit"
                         disabled={isSavingProduct || isUploadingImage}
-                        className="w-full rounded-3xl bg-[#171716] px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.15em] text-white shadow-[0_14px_30px_rgba(0,0,0,0.12)] transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-400"
+                        className="w-full rounded-3xl bg-[#171716] px-4 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-white shadow-[0_10px_24px_rgba(0,0,0,0.12)] transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-400"
                       >
                         {isSavingProduct ? "Saving product…" : "Save product"}
                       </button>
