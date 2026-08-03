@@ -82,16 +82,42 @@ export default function CheckoutPage() {
       const message = buildWhatsAppMessage();
       const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace("+", "")}?text=${encodeURIComponent(message)}`;
 
+      // Open a blank window synchronously so popup blockers allow navigation later
+      let newWindow = null;
       if (typeof window !== "undefined") {
-        const newWindow = window.open(
-          whatsappUrl,
-          "_blank",
-          "noopener,noreferrer",
-        );
+        newWindow = window.open("", "_blank", "noopener,noreferrer");
+      }
 
-        if (!newWindow) {
+      // Create the order on the server which will decrement stock atomically.
+      // We only navigate to WhatsApp after the order creation succeeds so that
+      // stock is updated when the customer actually initiates the WhatsApp order.
+      const resp = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          shipping_address: formData.address,
+          phoneNumber: formData.phoneNumber,
+          notes: formData.notes,
+          items: cart.map(item => ({ id: item.id, quantity: item.quantity })),
+        }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to create order");
+      }
+
+      // Navigate the previously opened window (if any) to WhatsApp with the message.
+      if (newWindow) {
+        try {
+          newWindow.location.href = whatsappUrl;
+        } catch (err) {
+          // If navigation fails, fallback to setting top-level location
           window.location.href = whatsappUrl;
         }
+      } else {
+        window.location.href = whatsappUrl;
       }
 
       setOrderSuccess(true);

@@ -9,15 +9,22 @@ const DEFAULT_MESSAGE =
 
 export default function WhatsAppHelp() {
   const [isOpen, setIsOpen] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handleOpen = () => {
     setIsOpen(open => !open);
   };
 
   const handleStartChat = () => {
-    const encodedMessage = encodeURIComponent(DEFAULT_MESSAGE);
+    const finalMessage = (message && message.trim()) ? message.trim() : "Hi Tripple Ore! I have an inquiry about your products.";
+    const encodedMessage = encodeURIComponent(finalMessage);
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
-    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    // Open in a new tab/window and then close the modal for a smooth UX
+    const newWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    if (!newWindow) {
+      // If popup blocked, fallback to same-tab navigation
+      window.location.href = whatsappUrl;
+    }
     setIsOpen(false);
   };
 
@@ -49,12 +56,14 @@ export default function WhatsAppHelp() {
               delivery inquiries.
             </p>
             <div className="rounded-2xl border border-gray-100 bg-[#fafaf9] p-4 text-sm text-neutral-600">
-              <span className="block font-semibold text-neutral-900">
-                Message:
-              </span>
-              <div className="mt-2 italic text-neutral-600">
-                "{DEFAULT_MESSAGE}"
-              </div>
+              <label className="block font-semibold text-neutral-900 mb-2">Your message</label>
+              <textarea
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                placeholder={DEFAULT_MESSAGE}
+                className="w-full min-h-[80px] resize-none rounded-lg border border-gray-200 bg-white p-3 text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-black"
+              />
+              <p className="mt-2 text-xs text-neutral-500">Leave empty to use a suggested message.</p>
             </div>
           </div>
 
@@ -63,7 +72,7 @@ export default function WhatsAppHelp() {
             className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#171716] px-4 py-3.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-[#111111]"
           >
             <MessageCircle size={18} />
-            Start Chat
+            Send via WhatsApp
           </button>
         </div>
       )}
