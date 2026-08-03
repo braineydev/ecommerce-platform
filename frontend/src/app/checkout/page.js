@@ -49,7 +49,7 @@ export default function CheckoutPage() {
       : "- No items selected";
 
     return [
-      "Hello, I would like to place an order.",
+      "Hello TRIPPLE ORE, I would like to place an order.",
       "",
       "Order Items:",
       items,
@@ -64,7 +64,7 @@ export default function CheckoutPage() {
       "",
       `Order Total: Ksh. ${total.toLocaleString()}`,
       "",
-      "Kindly confirm my order and the delivery arrangements. Thank you.",
+      "Kindly confirm my order and delivery arrangements. Thank you.",
     ].join("\n");
   };
 
@@ -80,7 +80,7 @@ export default function CheckoutPage() {
 
     try {
       const message = buildWhatsAppMessage();
-      const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace("+", "")}?text=${encodeURIComponent(message)}`;
+      const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(message)}`;
 
       // Open a blank window synchronously so popup blockers allow navigation later
       let newWindow = null;
@@ -115,7 +115,11 @@ export default function CheckoutPage() {
         } catch (err) {
           try {
             // try opening a new tab with the URL
-            const tab = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+            const tab = window.open(
+              whatsappUrl,
+              "_blank",
+              "noopener,noreferrer",
+            );
             if (!tab) window.location.href = whatsappUrl;
           } catch {
             window.location.href = whatsappUrl;

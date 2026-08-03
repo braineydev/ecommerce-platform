@@ -144,11 +144,11 @@ export default function ProductDetailClient({
     router.push("/cart");
   };
 
-  const WHATSAPP_NUMBER = "254721469696";
+  const WHATSAPP_NUMBER = "254799720009";
   const DEFAULT_WHATSAPP_MESSAGE = `Hello TRIPPLE ORE, I need help with this product: ${product.name}`;
   const handleStartChat = () => {
     const encodedMessage = encodeURIComponent(DEFAULT_WHATSAPP_MESSAGE);
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, "")}?text=${encodedMessage}`;
     if (typeof window !== "undefined") {
       const newWindow = window.open(
         whatsappUrl,

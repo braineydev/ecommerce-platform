@@ -3,7 +3,7 @@
 import { MessageCircle, X } from "lucide-react";
 import { useState } from "react";
 
-const WHATSAPP_NUMBER = "254721469696";
+const WHATSAPP_NUMBER = "254799720009";
 const DEFAULT_MESSAGE =
   "Hello TRIPPLE ORE, I need help with my order and product inquiries.";
 
@@ -21,7 +21,7 @@ export default function WhatsAppHelp() {
         ? message.trim()
         : "Hi Tripple Ore! I have an inquiry about your products.";
     const encodedMessage = encodeURIComponent(finalMessage);
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, "")}?text=${encodedMessage}`;
     // Open in a new tab/window and then close the modal for a smooth UX
     const newWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
     if (!newWindow) {
