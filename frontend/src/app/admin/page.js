@@ -719,11 +719,11 @@ export default function AdminPage() {
                         </div>
                       </div>
 
-                      <div className="space-y-4 p-4 md:hidden">
+                      <div className="space-y-4 px-3 py-4 md:hidden">
                         {products.map(product => (
                           <div
                             key={product.id}
-                            className="rounded-3xl border border-neutral-200 bg-[#f9faf8] p-4 shadow-sm"
+                            className="mx-1 rounded-3xl border border-neutral-200 bg-[#f9faf8] p-4 shadow-sm"
                           >
                             <div className="flex items-start justify-between gap-4">
                               <div className="min-w-0">
@@ -936,8 +936,8 @@ export default function AdminPage() {
 
             {isProductModalOpen && selectedProduct && (
               <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 px-3 py-6 sm:items-center sm:px-6">
-                <div className="w-full max-w-full overflow-hidden rounded-[2rem] border border-neutral-200 bg-white shadow-2xl sm:max-w-2xl">
-                  <div className="border-b border-neutral-200 bg-slate-50 px-5 py-5 sm:px-6">
+                <div className="mx-1 w-full max-w-2xl overflow-hidden rounded-[2rem] border border-neutral-200 bg-white shadow-2xl sm:mx-0">
+                  <div className="border-b border-neutral-200 bg-slate-50 px-4 py-5 sm:px-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
                         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
@@ -965,7 +965,7 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  <div className="max-h-[calc(100dvH-10rem)] overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
+                  <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
                     <form onSubmit={saveProduct} className="space-y-6 pb-6">
                       {error && (
                         <div
