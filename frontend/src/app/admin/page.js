@@ -719,11 +719,11 @@ export default function AdminPage() {
                         </div>
                       </div>
 
-                      <div className="space-y-4 px-4 py-4 md:hidden max-w-[min(100%,420px)] mx-auto">
+                      <div className="mx-auto max-w-md border border-neutral-200 bg-white p-7 sm:p-9 md:hidden space-y-4">
                         {products.map(product => (
                           <div
                             key={product.id}
-                            className="rounded-3xl border border-neutral-200 bg-[#f9faf8] p-3 shadow-sm overflow-hidden"
+                            className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm overflow-hidden"
                           >
                             <div className="flex items-start justify-between gap-4">
                               <div className="min-w-0">
@@ -746,7 +746,7 @@ export default function AdminPage() {
                               </div>
                             </div>
 
-                              <div className="mt-3 flex flex-wrap gap-2">
+                            <div className="mt-3 flex flex-wrap gap-2">
                               <span className="inline-flex items-center rounded-full bg-[#eef7f2] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
                                 {product.stock > 20
                                   ? "Plenty"
@@ -936,7 +936,7 @@ export default function AdminPage() {
 
             {isProductModalOpen && selectedProduct && (
               <div className="fixed inset-0 z-60 flex items-end justify-center bg-black/40 px-4 py-6 sm:items-center sm:px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-                <div className="w-full max-w-[min(100%,420px)] sm:max-w-2xl overflow-hidden rounded-4xl border border-neutral-200 bg-white shadow-2xl sm:mx-0 mx-auto">
+                <div className="w-full max-w-[min(100%,420px)] sm:max-w-2xl overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl sm:mx-0 mx-auto">
                   <div className="border-b border-neutral-200 bg-slate-50 px-4 py-5 sm:px-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
@@ -989,7 +989,7 @@ export default function AdminPage() {
                                 name: e.target.value,
                               }))
                             }
-                            className="mt-2 w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-950 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                            className="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:border-black focus:bg-white text-sm text-neutral-950"
                             required
                           />
                         </div>
@@ -1007,7 +1007,7 @@ export default function AdminPage() {
                               }))
                             }
                             placeholder="optional product-slug"
-                            className="mt-2 w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-950 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                            className="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:border-black focus:bg-white text-sm text-neutral-950"
                           />
                           <p className="mt-2 text-xs text-neutral-500">
                             Optional. If blank, a slug is generated from the
@@ -1083,7 +1083,7 @@ export default function AdminPage() {
                                 ),
                               }))
                             }
-                            className="w-full rounded-3xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-950 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                            className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:border-black focus:bg-white text-sm text-neutral-950"
                           />
                         </div>
                         <div className="space-y-3 rounded-3xl border border-neutral-200 bg-[#f7f6f2] p-4">
@@ -1105,7 +1105,7 @@ export default function AdminPage() {
                                 ),
                               }))
                             }
-                            className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-950 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                            className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:border-black focus:bg-white text-sm text-neutral-950"
                             required
                           />
                           <p className="text-xs text-neutral-500">
@@ -1123,7 +1123,7 @@ export default function AdminPage() {
                             type="file"
                             accept="image/jpeg,image/png,image/webp,image/avif"
                             onChange={uploadProductImage}
-                            className="w-full rounded-3xl border border-dashed border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900"
+                            className="w-full rounded-2xl border border-dashed border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900"
                           />
                           <p className="text-xs text-neutral-500">
                             {isUploadingImage
@@ -1139,7 +1139,7 @@ export default function AdminPage() {
                               }))
                             }
                             placeholder="product.jpg or https://..."
-                            className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900"
+                            className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:border-black focus:bg-white text-sm text-neutral-900"
                           />
                         </div>
                       </div>
@@ -1160,7 +1160,7 @@ export default function AdminPage() {
                                 stock: Number(e.target.value),
                               }))
                             }
-                            className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                            className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:border-black focus:bg-white text-sm text-neutral-900"
                             placeholder="Stock"
                           />
                           <textarea
@@ -1173,7 +1173,7 @@ export default function AdminPage() {
                             }
                             rows={4}
                             placeholder="Product description"
-                            className="w-full rounded-3xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                            className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:border-black focus:bg-white text-sm text-neutral-900"
                           />
                         </div>
                       </div>
@@ -1181,7 +1181,7 @@ export default function AdminPage() {
                       <button
                         type="submit"
                         disabled={isSavingProduct || isUploadingImage}
-                        className="w-full rounded-3xl bg-[#171716] px-4 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-white shadow-[0_10px_24px_rgba(0,0,0,0.12)] transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-400"
+                        className="w-full bg-[#171716] px-6 py-3.5 text-[11px] font-medium uppercase tracking-[0.13em] text-white hover:bg-neutral-700 disabled:opacity-70"
                       >
                         {isSavingProduct ? "Saving product…" : "Save product"}
                       </button>
