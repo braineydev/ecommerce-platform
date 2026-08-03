@@ -54,8 +54,8 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 border-b border-[#c9ddd2] bg-[#f6faf7]/95 shadow-[0_4px_20px_rgba(10,48,42,0.06)] backdrop-blur-md">
-      <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
-        <div className="flex h-[3.8rem] items-center justify-between">
+      <div className="mx-auto max-w-full w-full px-5 sm:px-6 lg:px-8 overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-2 h-[3.8rem]">
           <div className="flex items-center gap-3 sm:gap-4">
             <Link
               href="/"
@@ -100,7 +100,7 @@ export default function Navbar() {
             ))}
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex flex-wrap items-center gap-1 sm:gap-2">
             <a
               href="/#shop"
               className="hidden h-10 w-10 items-center justify-center text-[#0A302A] transition-colors hover:text-[#25806e] sm:inline-flex"

@@ -19,58 +19,163 @@
   --muted: #58736a;
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
 
 body {
+  width: 100%;
+  max-width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
   background: linear-gradient(135deg, #f8fbf9 0%, #eef6f1 100%);
   color: var(--forest-900);
 }
 
-::selection { background: var(--forest-700); color: #fff; }
-
-button, a, input, textarea, select {
-  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+body > * {
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
-input, textarea, select {
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+img,
+svg,
+video,
+canvas,
+iframe {
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  min-width: 0;
+}
+
+::selection {
+  background: var(--forest-700);
+  color: #fff;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+input,
+textarea,
+select {
   border-radius: 0.45rem !important;
   border-color: var(--line) !important;
   background-color: #fbfdfb !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
-input:focus, textarea:focus, select:focus {
+input:focus,
+textarea:focus,
+select:focus {
   border-color: var(--forest-600) !important;
   outline: 2px solid rgba(37, 128, 110, 0.2);
   outline-offset: 1px;
 }
 
 /* Theme existing shared utility surfaces without changing component structure. */
-[class~="bg-white"] { background-color: #fbfdfb; }
-[class*="bg-[#fcfcfb]"] { background-color: var(--forest-50); }
-[class*="bg-[#f7f3eb]"], [class*="bg-[#f1f0ed]"], [class*="bg-[#e9e8e4]"] { background-color: var(--forest-100); }
-[class~="bg-neutral-950"], [class*="bg-[#171716]"], [class*="bg-[#111111]"] { background-color: var(--forest-900); }
-[class~="bg-neutral-950"]:hover, [class*="bg-[#171716]"]:hover, [class*="bg-[#111111]"]:hover { background-color: var(--forest-700); }
+[class~="bg-white"] {
+  background-color: #fbfdfb;
+}
+[class*="bg-[#fcfcfb]"] {
+  background-color: var(--forest-50);
+}
+[class*="bg-[#f7f3eb]"],
+[class*="bg-[#f1f0ed]"],
+[class*="bg-[#e9e8e4]"] {
+  background-color: var(--forest-100);
+}
+[class~="bg-neutral-950"],
+[class*="bg-[#171716]"],
+[class*="bg-[#111111]"] {
+  background-color: var(--forest-900);
+}
+[class~="bg-neutral-950"]:hover,
+[class*="bg-[#171716]"]:hover,
+[class*="bg-[#111111]"]:hover {
+  background-color: var(--forest-700);
+}
 
-[class~="border-neutral-200"], [class~="border-neutral-300"], [class~="border-gray-200"], [class~="border-gray-100"] { border-color: var(--line); }
-[class~="border-neutral-950"], [class~="border-gray-900"] { border-color: var(--forest-900); }
-[class~="text-neutral-950"], [class~="text-neutral-900"], [class~="text-gray-900"], [class~="text-black"] { color: var(--forest-900); }
-[class~="text-neutral-700"], [class~="text-gray-700"], [class~="text-slate-700"] { color: var(--forest-800); }
-[class~="text-neutral-600"], [class~="text-gray-600"], [class~="text-slate-600"] { color: var(--muted); }
-[class~="text-neutral-500"], [class~="text-gray-500"], [class~="text-slate-500"] { color: #6c877d; }
-[class~="text-amber-400"], [class~="text-yellow-400"] { color: var(--gold); }
-[class~="bg-gray-100"], [class~="bg-gray-50"], [class~="bg-neutral-100"] { background-color: #edf5f0; }
+[class~="border-neutral-200"],
+[class~="border-neutral-300"],
+[class~="border-gray-200"],
+[class~="border-gray-100"] {
+  border-color: var(--line);
+}
+[class~="border-neutral-950"],
+[class~="border-gray-900"] {
+  border-color: var(--forest-900);
+}
+[class~="text-neutral-950"],
+[class~="text-neutral-900"],
+[class~="text-gray-900"],
+[class~="text-black"] {
+  color: var(--forest-900);
+}
+[class~="text-neutral-700"],
+[class~="text-gray-700"],
+[class~="text-slate-700"] {
+  color: var(--forest-800);
+}
+[class~="text-neutral-600"],
+[class~="text-gray-600"],
+[class~="text-slate-600"] {
+  color: var(--muted);
+}
+[class~="text-neutral-500"],
+[class~="text-gray-500"],
+[class~="text-slate-500"] {
+  color: #6c877d;
+}
+[class~="text-amber-400"],
+[class~="text-yellow-400"] {
+  color: var(--gold);
+}
+[class~="bg-gray-100"],
+[class~="bg-gray-50"],
+[class~="bg-neutral-100"] {
+  background-color: #edf5f0;
+}
 [class~="border"][class~="bg-white"] {
   box-shadow: 0 10px 28px rgba(10, 48, 42, 0.055);
 }
 [class~="border"][class~="bg-white"]:hover {
   border-color: #9dbdaf;
 }
-[class*="shadow-[0_20px"], [class*="shadow-[0_18px"], [class*="shadow-[0_16px"] {
+[class*="shadow-[0_20px"],
+[class*="shadow-[0_18px"],
+[class*="shadow-[0_16px"] {
   box-shadow: 0 16px 38px rgba(10, 48, 42, 0.12);
 }
 
-main a:not([class*="bg-"]):focus-visible, nav a:focus-visible, button:focus-visible {
+main a:not([class*="bg-"]):focus-visible,
+nav a:focus-visible,
+button:focus-visible {
   outline: 2px solid var(--forest-600);
   outline-offset: 3px;
 }

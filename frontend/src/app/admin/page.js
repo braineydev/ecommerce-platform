@@ -554,8 +554,8 @@ export default function AdminPage() {
     }`;
 
   return (
-    <div className="min-h-screen bg-[#fcfcfb] px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
-      <div className="mx-auto max-w-7xl border border-neutral-200 bg-white p-6 sm:p-8">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#fcfcfb] px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+      <div className="mx-auto w-full max-w-full overflow-hidden border border-neutral-200 bg-white p-6 sm:p-8">
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-neutral-500">
@@ -676,9 +676,9 @@ export default function AdminPage() {
             )}
 
             {tab === "products" && (
-              <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+              <div className="grid min-w-0 gap-6 overflow-hidden lg:grid-cols-[minmax(0,1fr)_280px]">
                 <div className="space-y-6">
-                  <div className="border border-neutral-200 bg-white">
+                  <div className="overflow-hidden border border-neutral-200 bg-white">
                     <div className="flex flex-col gap-4 border-b border-neutral-200 p-6 sm:flex-row sm:items-end sm:justify-between">
                       <div>
                         <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">
@@ -703,13 +703,13 @@ export default function AdminPage() {
                       </button>
                     </div>
                     <div className="rounded-4xl border border-neutral-200 bg-white shadow-sm">
-                      <div className="px-5 py-4 md:hidden">
-                        <div className="flex items-center justify-between gap-4">
-                          <div>
+                      <div className="px-5 py-4 lg:hidden">
+                        <div className="flex min-w-0 items-center justify-between gap-4">
+                          <div className="min-w-0">
                             <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-neutral-500">
                               Product list
                             </p>
-                            <h3 className="mt-1 text-lg font-semibold text-neutral-950">
+                            <h3 className="mt-1 text-lg font-semibold text-neutral-950 truncate">
                               Quick catalog overview
                             </h3>
                           </div>
@@ -719,24 +719,24 @@ export default function AdminPage() {
                         </div>
                       </div>
 
-                      <div className="mx-auto max-w-md border border-neutral-200 bg-white p-7 sm:p-9 md:hidden space-y-4">
+                      <div className="w-full min-w-0 overflow-hidden border border-neutral-200 bg-white p-3 sm:p-4 lg:hidden space-y-4">
                         {products.map(product => (
                           <div
                             key={product.id}
-                            className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm overflow-hidden"
+                            className="min-w-0 w-full overflow-hidden rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm"
                           >
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="min-w-0">
-                                <p className="text-base font-semibold text-neutral-950 truncate">
+                            <div className="flex min-w-0 items-start justify-between gap-4">
+                              <div className="min-w-0 flex-1 break-words">
+                                <p className="text-base font-semibold text-neutral-950 truncate break-words">
                                   {product.name}
                                 </p>
-                                <p className="mt-2 text-xs uppercase tracking-[0.14em] text-neutral-500">
+                                <p className="mt-2 text-xs uppercase tracking-[0.14em] text-neutral-500 truncate break-words">
                                   {product.category?.name ||
                                     product.categories?.name ||
                                     "Uncategorised"}
                                 </p>
                               </div>
-                              <div className="shrink-0 text-right">
+                              <div className="flex-shrink-0 min-w-[90px] max-w-[120px] text-right">
                                 <p className="text-sm font-semibold text-neutral-950">
                                   {formatCurrency(product.price)}
                                 </p>
@@ -759,17 +759,17 @@ export default function AdminPage() {
                               </span>
                             </div>
 
-                            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                            <div className="mt-3 grid min-w-0 gap-2 sm:grid-cols-2">
                               <button
                                 type="button"
-                                className="w-full rounded-3xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold uppercase tracking-[0.11em] text-neutral-950 transition hover:border-neutral-400 hover:bg-neutral-50"
+                                className="w-full min-w-0 rounded-3xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold uppercase tracking-[0.11em] text-neutral-950 transition hover:border-neutral-400 hover:bg-neutral-50"
                                 onClick={() => handleProductSelect(product)}
                               >
                                 Edit product
                               </button>
                               <button
                                 type="button"
-                                className="w-full rounded-3xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold uppercase tracking-[0.11em] text-red-700 transition hover:bg-red-100"
+                                className="w-full min-w-0 rounded-3xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold uppercase tracking-[0.11em] text-red-700 transition hover:bg-red-100"
                                 onClick={async () => {
                                   if (!confirm("Delete this product?")) return;
                                   const res = await fetch(
@@ -801,7 +801,7 @@ export default function AdminPage() {
                         ))}
                       </div>
 
-                      <div className="hidden overflow-x-auto overscroll-x-contain md:block rounded-b-3xl">
+                      <div className="hidden overflow-x-auto overscroll-x-contain lg:block rounded-b-3xl">
                         <table className="w-full text-left text-sm">
                           <thead className="border-b border-neutral-200 bg-[#f1f0ed] text-[10px] font-medium uppercase tracking-[0.12em] text-neutral-500">
                             <tr>
@@ -936,7 +936,7 @@ export default function AdminPage() {
 
             {isProductModalOpen && selectedProduct && (
               <div className="fixed inset-0 z-60 flex items-end justify-center bg-black/40 px-4 py-6 sm:items-center sm:px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-                <div className="w-full max-w-[min(100%,420px)] sm:max-w-2xl overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl sm:mx-0 mx-auto">
+                <div className="mx-auto w-full max-w-full sm:max-w-2xl overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl">
                   <div className="border-b border-neutral-200 bg-slate-50 px-4 py-5 sm:px-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
@@ -965,7 +965,7 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
+                  <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-3 py-3 sm:px-6 sm:py-6">
                     <form onSubmit={saveProduct} className="space-y-6 pb-6">
                       {error && (
                         <div
@@ -1197,7 +1197,38 @@ export default function AdminPage() {
                   <h2 className="text-xl font-semibold text-gray-900">
                     Customers
                   </h2>
-                  <div className="mt-6 overflow-x-auto rounded-3xl border border-gray-200 bg-white">
+                  <div className="mt-6 space-y-4 lg:hidden">
+                    {customers.map(customer => (
+                      <div
+                        key={customer.id}
+                        className="rounded-3xl border border-gray-200 bg-white p-4"
+                      >
+                        <div className="flex flex-col gap-3">
+                          <div className="space-y-1">
+                            <p className="text-sm font-semibold text-gray-900">
+                              {customer.full_name}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {customer.email}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-700">
+                              {customer.role}
+                            </span>
+                            <button
+                              type="button"
+                              className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-200"
+                              onClick={() => handleCustomerSelect(customer)}
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="hidden lg:block mt-6 overflow-x-auto rounded-3xl border border-gray-200 bg-white">
                     <table className="min-w-full text-left text-sm">
                       <thead className="bg-gray-50 text-gray-600">
                         <tr>
@@ -1350,7 +1381,44 @@ export default function AdminPage() {
             {tab === "orders" && (
               <div className="rounded-4xl border border-gray-100 bg-gray-50 p-6">
                 <h2 className="text-xl font-semibold text-gray-900">Orders</h2>
-                <div className="mt-6 overflow-x-auto rounded-3xl border border-gray-200 bg-white">
+                <div className="mt-6 space-y-4 lg:hidden">
+                  {orders.map(order => (
+                    <div
+                      key={order.id}
+                      className="rounded-3xl border border-gray-200 bg-white p-4"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex flex-col gap-1">
+                          <p className="text-sm font-semibold text-gray-900">
+                            Order {order.id}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {order.profiles?.full_name || "Customer unknown"}
+                          </p>
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <div className="rounded-2xl bg-slate-50 p-3 text-sm text-slate-700">
+                            <span className="font-semibold">Status:</span>{" "}
+                            {order.status}
+                          </div>
+                          <div className="rounded-2xl bg-slate-50 p-3 text-sm text-slate-700">
+                            <span className="font-semibold">Total:</span>{" "}
+                            {formatCurrency(order.total_amount)}
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-200"
+                          >
+                            View
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="hidden lg:block mt-6 overflow-x-auto rounded-3xl border border-gray-200 bg-white">
                   <table className="min-w-full text-left text-sm">
                     <thead className="bg-gray-50 text-gray-600">
                       <tr>
