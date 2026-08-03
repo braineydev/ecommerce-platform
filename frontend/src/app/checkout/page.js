@@ -327,7 +327,13 @@ export default function CheckoutPage() {
           disabled={isSubmitting}
           className={`${whatsappButtonClasses} flex w-full items-center justify-center`}
         >
-          {isSubmitting ? "Preparing Order..." : <><MessageCircleMore size={18} className="mr-2" /> Send on WhatsApp</>}
+          {isSubmitting ? (
+            "Preparing Order..."
+          ) : (
+            <>
+              <MessageCircleMore size={18} className="mr-2" /> Send on WhatsApp
+            </>
+          )}
         </button>
       </div>
     </>

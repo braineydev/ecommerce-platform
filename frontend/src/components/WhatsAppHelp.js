@@ -16,7 +16,10 @@ export default function WhatsAppHelp() {
   };
 
   const handleStartChat = () => {
-    const finalMessage = (message && message.trim()) ? message.trim() : "Hi Tripple Ore! I have an inquiry about your products.";
+    const finalMessage =
+      message && message.trim()
+        ? message.trim()
+        : "Hi Tripple Ore! I have an inquiry about your products.";
     const encodedMessage = encodeURIComponent(finalMessage);
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
     // Open in a new tab/window and then close the modal for a smooth UX
@@ -56,14 +59,18 @@ export default function WhatsAppHelp() {
               delivery inquiries.
             </p>
             <div className="rounded-2xl border border-gray-100 bg-[#fafaf9] p-4 text-sm text-neutral-600">
-              <label className="block font-semibold text-neutral-900 mb-2">Your message</label>
+              <label className="block font-semibold text-neutral-900 mb-2">
+                Your message
+              </label>
               <textarea
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 placeholder={DEFAULT_MESSAGE}
                 className="w-full min-h-[80px] resize-none rounded-lg border border-gray-200 bg-white p-3 text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-black"
               />
-              <p className="mt-2 text-xs text-neutral-500">Leave empty to use a suggested message.</p>
+              <p className="mt-2 text-xs text-neutral-500">
+                Leave empty to use a suggested message.
+              </p>
             </div>
           </div>
 
