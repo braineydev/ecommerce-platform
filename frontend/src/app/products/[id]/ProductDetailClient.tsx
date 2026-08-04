@@ -144,7 +144,7 @@ export default function ProductDetailClient({
     router.push("/cart");
   };
 
-  const WHATSAPP_NUMBER = "254799720009";
+  const WHATSAPP_NUMBER = "254721469696";
   const DEFAULT_WHATSAPP_MESSAGE = `Hello TRIPPLE ORE, I need help with this product: ${product.name}`;
   const handleStartChat = () => {
     const encodedMessage = encodeURIComponent(DEFAULT_WHATSAPP_MESSAGE);

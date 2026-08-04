@@ -1,5 +1,5 @@
 export default function WhatsAppWidget({
-  phone = "254799720009",
+  phone = "254721469696",
   message = "Hi, I need help with this product.",
 }) {
   const encoded = encodeURIComponent(message);

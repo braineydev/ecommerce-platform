@@ -10,8 +10,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCart } from "../../context/CartContext";
+import buildCheckoutWhatsAppMessage from "../../lib/checkout-whatsapp";
 
-const WHATSAPP_NUMBER = "+254799720009";
+const WHATSAPP_NUMBER = "+254721469696";
 const whatsappButtonClasses =
   "w-full bg-[#25D366] px-8 py-4 text-[11px] font-medium uppercase tracking-[0.13em] text-white shadow-[0_14px_32px_rgba(37,211,102,0.24)] transition-colors hover:bg-[#20ba5a] disabled:bg-neutral-400";
 
@@ -43,31 +44,6 @@ export default function CheckoutPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const buildWhatsAppMessage = () => {
-    const items = cart.length
-      ? cart.map(item => `- ${item.name} × ${item.quantity}`).join("\n")
-      : "- No items selected";
-
-    return [
-      "Hello TRIPPLE ORE, I would like to place an order.",
-      "",
-      "Order Items:",
-      items,
-      "",
-      `Customer Name: ${formData.fullName}`,
-      "",
-      `Delivery Address: ${formData.address}`,
-      "",
-      `WhatsApp Number: ${formData.phoneNumber}`,
-      "",
-      `Additional Notes: ${formData.notes || "None"}`,
-      "",
-      `Order Total: Ksh. ${total.toLocaleString()}`,
-      "",
-      "Kindly confirm my order and the delivery arrangements. Thank you.",
-    ].join("\n");
-  };
-
   const openWhatsAppUrl = whatsappUrl => {
     if (typeof window === "undefined") return;
     try {
@@ -88,7 +64,11 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
 
-    const message = buildWhatsAppMessage();
+    const message = buildCheckoutWhatsAppMessage({
+      cart,
+      formData,
+      total,
+    });
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(message)}`;
 
     let newWindow = null;
@@ -104,29 +84,6 @@ export default function CheckoutPage() {
     }
 
     try {
-      const resp = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          shipping_address: formData.address,
-          phoneNumber: formData.phoneNumber,
-          notes: formData.notes,
-          items: cart.map(item => ({ id: item.id, quantity: item.quantity })),
-        }),
-      });
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        const errorMessage = err.error || "Failed to create order";
-        if (newWindow) {
-          try {
-            newWindow.close();
-          } catch {}
-        }
-        throw new Error(errorMessage);
-      }
-
       if (newWindow) {
         try {
           newWindow.location.href = whatsappUrl;
@@ -145,7 +102,7 @@ export default function CheckoutPage() {
         } catch {}
       }
       console.error("Checkout Error:", error.message);
-      alert(`Checkout failed: ${error.message}`);
+      alert(`Unable to open WhatsApp: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
