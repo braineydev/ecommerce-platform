@@ -12,6 +12,11 @@ const TABS = [
 
 const formatCurrency = value => `Ksh. ${Number(value || 0).toLocaleString()}`;
 
+const mapCategoryLabel = name =>
+  String(name || "").toLowerCase() === "fashion"
+    ? "Kitchenware"
+    : name;
+
 const slugify = value =>
   String(value || "")
     .toLowerCase()
@@ -1050,7 +1055,7 @@ export default function AdminPage() {
                                 className={`rounded-3xl border px-3 py-2 text-left text-sm font-semibold uppercase tracking-[0.11em] transition truncate ${selected ? "border-neutral-900 bg-neutral-950 text-white" : "border-neutral-300 bg-white text-neutral-700 hover:border-neutral-900"}`}
                                 aria-pressed={selected}
                               >
-                                {category.name}
+                                {mapCategoryLabel(category.name)}
                               </button>
                             );
                           })}

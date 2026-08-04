@@ -369,10 +369,13 @@ function StorefrontContent() {
     }
   };
 
+  const getCategoryLabel = (name: string) =>
+    name.toLowerCase() === "fashion" ? "Kitchenware" : name;
+
   const categoryOptions = [
     { label: "All", value: null },
     ...categories.map(category => ({
-      label: category.name,
+      label: getCategoryLabel(category.name),
       value: category.slug,
     })),
   ];
