@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 
 const backendApiBase = (
-  process.env.BACKEND_API_URL || "http://localhost:5000/api"
+  process.env.BACKEND_API_URL ||
+  (process.env.NEXT_PUBLIC_API_URL
+    ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")}/api`
+    : "http://localhost:5000/api")
 ).replace(/\/$/, "");
 
 export async function GET(request, { params }) {
