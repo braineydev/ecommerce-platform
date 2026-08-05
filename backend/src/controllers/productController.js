@@ -117,7 +117,28 @@ exports.getProducts = async (req, res) => {
   }
 
   if (category) {
-    query = query.eq("category_id", category);
+    // Allow filtering by category id (numeric or UUID) or by slug/name.
+    const trimmedCat = String(category).trim();
+    let categoryIdToUse = trimmedCat;
+    const isNumeric = /^[0-9]+$/.test(trimmedCat);
+    const isUuid = /^[0-9a-fA-F-]{36}$/.test(trimmedCat);
+
+    if (!isNumeric && !isUuid) {
+      try {
+        const catResp = await supabase
+          .from("categories")
+          .select("id,slug,name")
+          .or(`slug.eq.${trimmedCat},name.ilike.%${trimmedCat}%`)
+          .maybeSingle();
+        if (!catResp.error && catResp.data && catResp.data.id) {
+          categoryIdToUse = catResp.data.id;
+        }
+      } catch (e) {
+        // Ignore resolution errors and fall back to provided value
+      }
+    }
+
+    query = query.eq("category_id", categoryIdToUse);
   }
 
   if (brand) query = query.ilike("brand", `%${brand}%`);
