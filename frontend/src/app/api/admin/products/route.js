@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import {
@@ -7,6 +8,17 @@ import {
 import { createSupabaseAdminClient } from "../../../../lib/supabase-server";
 
 const PRODUCT_SELECT = "*, categories(id, name, slug)";
+
+async function getCategorySlugById(supabase, categoryId) {
+  const { data, error } = await supabase
+    .from("categories")
+    .select("slug")
+    .eq("id", categoryId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data?.slug || null;
+}
 
 function slugify(value) {
   return String(value || "")
@@ -150,6 +162,16 @@ export async function POST(request) {
       { error: error.message },
       { status: error.code === "23505" ? 409 : 500 },
     );
+  }
+
+  try {
+    revalidatePath("/");
+    const categorySlug = await getCategorySlugById(supabase, categoryId);
+    if (categorySlug) {
+      revalidatePath(`/categories/${categorySlug}`);
+    }
+  } catch (error) {
+    console.error("Revalidation failed:", error);
   }
 
   return NextResponse.json({

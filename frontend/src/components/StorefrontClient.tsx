@@ -2,7 +2,7 @@
 
 import { ArrowRight, Heart, Package } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { API_PROXY_PATH, readApiJson } from "../lib/api";
@@ -214,19 +214,13 @@ export default function StorefrontClient({
     };
   }, [user]);
 
+  const searchParams = useSearchParams();
+
   useEffect(() => {
-    const syncCategoryFromUrl = () => {
-      const params = new URLSearchParams(window.location.search);
-      const selectedCategory =
-        params.get("category")?.trim().toLowerCase() || null;
-      setActiveCategory(selectedCategory);
-    };
-
-    syncCategoryFromUrl();
-
-    window.addEventListener("popstate", syncCategoryFromUrl);
-    return () => window.removeEventListener("popstate", syncCategoryFromUrl);
-  }, []);
+    const selectedCategory =
+      searchParams.get("category")?.trim().toLowerCase() || null;
+    setActiveCategory(selectedCategory);
+  }, [searchParams]);
 
   const productMatchesCategory = (product: Product, categorySlug: string) => {
     const productCategorySlugs = [

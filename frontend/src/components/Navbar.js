@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 
@@ -50,11 +50,22 @@ const categoryLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const categoryParam = useMemo(() => {
-    if (typeof window === "undefined") return "";
-    return new URLSearchParams(window.location.search).get("category") || "";
-  }, [pathname]);
+  const [categoryParam, setCategoryParam] = useState("");
   const { getCartCount } = useCart();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    setCategoryParam(params.get("category") || "");
+
+    const handlePopState = () => {
+      const nextParams = new URLSearchParams(window.location.search);
+      setCategoryParam(nextParams.get("category") || "");
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [pathname]);
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const isAdmin = Boolean(

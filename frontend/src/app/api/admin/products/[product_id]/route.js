@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import {
@@ -7,6 +8,17 @@ import {
 import { createSupabaseAdminClient } from "../../../../../lib/supabase-server";
 
 const PRODUCT_SELECT = "*, categories(id, name, slug)";
+
+async function getCategorySlugById(supabase, categoryId) {
+  const { data, error } = await supabase
+    .from("categories")
+    .select("slug")
+    .eq("id", categoryId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data?.slug || null;
+}
 
 function slugify(value) {
   return String(value || "")
@@ -124,6 +136,21 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  const existingProductResponse = await supabase
+    .from("products")
+    .select("category_id, slug")
+    .eq("id", product_id)
+    .maybeSingle();
+
+  if (existingProductResponse.error) {
+    return NextResponse.json(
+      { error: existingProductResponse.error.message },
+      { status: 500 },
+    );
+  }
+
+  const previousCategoryId = existingProductResponse.data?.category_id;
+
   const { data, error } = await supabase
     .from("products")
     .update({
@@ -152,6 +179,28 @@ export async function PUT(request, { params }) {
 
   if (!data) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
+  }
+
+  try {
+    revalidatePath("/");
+    const newCategorySlug = await getCategorySlugById(supabase, categoryId);
+    if (newCategorySlug) {
+      revalidatePath(`/categories/${newCategorySlug}`);
+    }
+    if (
+      previousCategoryId &&
+      String(previousCategoryId) !== String(categoryId)
+    ) {
+      const previousCategorySlug = await getCategorySlugById(
+        supabase,
+        previousCategoryId,
+      );
+      if (previousCategorySlug) {
+        revalidatePath(`/categories/${previousCategorySlug}`);
+      }
+    }
+  } catch (error) {
+    console.error("Revalidation failed:", error);
   }
 
   return NextResponse.json({
