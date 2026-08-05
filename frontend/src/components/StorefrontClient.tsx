@@ -365,8 +365,7 @@ export default function StorefrontClient({
     }
   };
 
-  const getCategoryLabel = (name: string) =>
-    name.toLowerCase() === "fashion" ? "Kitchenware" : name;
+  const getCategoryLabel = (name: string) => name;
 
   const categoryOptions = [
     { label: "All", value: null },

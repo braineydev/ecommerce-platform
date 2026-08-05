@@ -64,6 +64,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly" as const,
         priority: 0.7,
       },
+      {
+        url: `${siteUrl}/categories/electronics`,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      },
+      {
+        url: `${siteUrl}/categories/fashion`,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      },
+      {
+        url: `${siteUrl}/categories/home-living`,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      },
+      {
+        url: `${siteUrl}/categories/kitchenware`,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      },
     ];
 
     return entries.concat(productEntries, categoryEntries);

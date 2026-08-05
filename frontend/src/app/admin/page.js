@@ -12,10 +12,7 @@ const TABS = [
 
 const formatCurrency = value => `Ksh. ${Number(value || 0).toLocaleString()}`;
 
-const mapCategoryLabel = name =>
-  String(name || "").toLowerCase() === "fashion"
-    ? "Kitchenware"
-    : name;
+const mapCategoryLabel = name => String(name || "");
 
 const slugify = value =>
   String(value || "")

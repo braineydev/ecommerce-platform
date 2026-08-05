@@ -26,6 +26,26 @@ const categoryLinks = [
     href: "/?category=accessories#shop",
     category: "accessories",
   },
+  {
+    label: "Electronics",
+    href: "/?category=electronics#shop",
+    category: "electronics",
+  },
+  {
+    label: "Fashion",
+    href: "/?category=fashion#shop",
+    category: "fashion",
+  },
+  {
+    label: "Home & Living",
+    href: "/?category=home-living#shop",
+    category: "home-living",
+  },
+  {
+    label: "Kitchenware",
+    href: "/?category=kitchenware#shop",
+    category: "kitchenware",
+  },
 ];
 
 export default function Navbar() {
