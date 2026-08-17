@@ -1,9 +1,7 @@
 import type { MetadataRoute } from "next";
+import { getProductsFromSupabase } from "../lib/catalog";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-const apiUrl = process.env.NEXT_PUBLIC_SITE_URL
-  ? `${process.env.NEXT_PUBLIC_SITE_URL}/api`
-  : "http://localhost:3000/api";
 
 const staticRoutes = [
   { url: siteUrl, changeFrequency: "daily" as const, priority: 1 },
@@ -32,11 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   try {
-    const response = await fetch(`${apiUrl}/products`, {
-      next: { revalidate: 300 },
-    });
-    if (!response.ok) return entries;
-    const { data = [] } = await response.json();
+    const { data = [] } = await getProductsFromSupabase({ limit: 100 });
 
     const productEntries = (
       data as Array<{

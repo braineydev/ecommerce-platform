@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { API_PROXY_PATH, readApiJson } from "../lib/api";
+import { API_BACKEND_PATH, API_PROXY_PATH, readApiJson } from "../lib/api";
 import { getProductImageSrc } from "../lib/product-image";
 
 function seededNumberFromString(s: string) {
@@ -106,7 +106,7 @@ export default function StorefrontClient({
   const fetchProducts = async (keyword = "") => {
     try {
       setIsLoading(true);
-      const apiBase = API_PROXY_PATH;
+      const apiBase = API_BACKEND_PATH;
       const query = new URLSearchParams();
       const trimmedKeyword = keyword.trim();
       if (trimmedKeyword) query.set("search", trimmedKeyword);
@@ -140,7 +140,7 @@ export default function StorefrontClient({
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch(`${API_PROXY_PATH}/products/categories`, {
+      const res = await fetch(`${API_BACKEND_PATH}/products/categories`, {
         cache: "no-store",
       });
       const data = await readApiJson<{ data?: Category[] }>(res);

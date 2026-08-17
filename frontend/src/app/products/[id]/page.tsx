@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cache } from "react";
+import { getProductByIdFromSupabase } from "../../../lib/catalog";
 import ProductDetailClient from "./ProductDetailClient";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-const apiUrl = process.env.NEXT_PUBLIC_SITE_URL
-  ? `${process.env.NEXT_PUBLIC_SITE_URL}/api`
-  : "http://localhost:3000/api";
 
 type Product = {
   id: string | number;
@@ -21,10 +20,6 @@ type Product = {
   meta_title?: string;
   meta_description?: string;
   updated_at?: string;
-};
-
-type ProductResponse = {
-  product?: Product;
 };
 
 function seededNumberFromString(s: string) {
@@ -55,18 +50,13 @@ function getRating(id: string | number) {
   return +(4.4 + r).toFixed(1);
 }
 
-async function getProduct(id: string): Promise<Product | null> {
+const getProduct = cache(async (id: string): Promise<Product | null> => {
   try {
-    const response = await fetch(`${apiUrl}/products/${id}`, {
-      next: { revalidate: 60 },
-    });
-    if (!response.ok) return null;
-    const payload = (await response.json()) as ProductResponse;
-    return payload.product || null;
+    return (await getProductByIdFromSupabase(id)) as Product | null;
   } catch {
     return null;
   }
-}
+});
 
 export async function generateMetadata({
   params,

@@ -1,41 +1,37 @@
 import { NextResponse } from "next/server";
-
-const backendApiBase = (
-  process.env.BACKEND_API_URL ||
-  (process.env.NEXT_PUBLIC_API_URL
-    ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")}/api`
-    : "http://localhost:5000/api")
-).replace(/\/$/, "");
+import { getProductByIdFromSupabase } from "../../../../lib/catalog";
 
 export async function GET(request, { params }) {
   const resolvedParams = await params;
   const id = resolvedParams?.id;
+  const startedAt = performance.now();
 
   try {
-    const response = await fetch(
-      `${backendApiBase}/products/${encodeURIComponent(id)}`,
-      {
-        headers: {
-          accept: "application/json",
-        },
-        cache: "no-store",
-      },
-    );
-
-    const payload = await response.json().catch(() => null);
-
-    if (!response.ok) {
+    const product = await getProductByIdFromSupabase(id);
+    const duration = performance.now() - startedAt;
+    console.info("catalog.product", { durationMs: Math.round(duration) });
+    if (!product) {
       return NextResponse.json(
-        { error: payload?.error || "Unable to load product" },
-        { status: response.status },
+        { error: "Product not found" },
+        { status: 404, headers: { "Server-Timing": `supabase;dur=${duration.toFixed(1)}` } },
       );
     }
-
-    return NextResponse.json({ product: payload?.product || null });
+    return NextResponse.json(
+      { product },
+      { headers: { "Server-Timing": `supabase;dur=${duration.toFixed(1)}` } },
+    );
   } catch (error) {
+    const duration = performance.now() - startedAt;
+    console.error("catalog.product.failed", {
+      durationMs: Math.round(duration),
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
     return NextResponse.json(
       { error: error.message || "Unable to load product" },
-      { status: 500 },
+      {
+        status: 500,
+        headers: { "Server-Timing": `supabase;dur=${duration.toFixed(1)}` },
+      },
     );
   }
 }

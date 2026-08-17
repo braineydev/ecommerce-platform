@@ -1,25 +1,16 @@
 import type { Metadata } from "next";
+import { cache } from "react";
+import { getProductByIdFromSupabase } from "../../../lib/catalog";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-const apiUrl = process.env.NEXT_PUBLIC_SITE_URL
-  ? `${process.env.NEXT_PUBLIC_SITE_URL}/api`
-  : "http://localhost:3000/api";
 
-async function getProduct(identifier: string) {
+const getProduct = cache(async (identifier: string) => {
   try {
-    const response = await fetch(
-      `${apiUrl}/products/${encodeURIComponent(identifier)}`,
-      {
-        next: { revalidate: 300 },
-      },
-    );
-    if (!response.ok) return null;
-    const result = await response.json();
-    return result.product || null;
+    return await getProductByIdFromSupabase(identifier);
   } catch {
     return null;
   }
-}
+});
 
 export async function generateMetadata({
   params,

@@ -1,35 +1,28 @@
 import { NextResponse } from "next/server";
-
-const backendApiBase = (
-  process.env.BACKEND_API_URL ||
-  (process.env.NEXT_PUBLIC_API_URL
-    ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")}/api`
-    : "http://localhost:5000/api")
-).replace(/\/$/, "");
+import { getCategoriesFromSupabase } from "../../../../lib/catalog";
 
 export async function GET() {
+  const startedAt = performance.now();
   try {
-    const response = await fetch(`${backendApiBase}/products/categories`, {
-      headers: {
-        accept: "application/json",
-      },
-      cache: "no-store",
-    });
-
-    const payload = await response.json().catch(() => null);
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: payload?.error || "Unable to load categories" },
-        { status: response.status },
-      );
-    }
-
-    return NextResponse.json({ data: payload?.data || [] });
+    const data = await getCategoriesFromSupabase();
+    const duration = performance.now() - startedAt;
+    console.info("catalog.categories", { durationMs: Math.round(duration) });
+    return NextResponse.json(
+      { data },
+      { headers: { "Server-Timing": `supabase;dur=${duration.toFixed(1)}` } },
+    );
   } catch (error) {
+    const duration = performance.now() - startedAt;
+    console.error("catalog.categories.failed", {
+      durationMs: Math.round(duration),
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
     return NextResponse.json(
       { error: error.message || "Unable to load categories" },
-      { status: 500 },
+      {
+        status: 500,
+        headers: { "Server-Timing": `supabase;dur=${duration.toFixed(1)}` },
+      },
     );
   }
 }

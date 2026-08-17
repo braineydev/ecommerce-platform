@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
+import {
+  getCategoriesFromSupabase,
+  getProductsFromSupabase,
+} from "../../../lib/catalog";
 import { getProductImageSrc } from "../../../lib/product-image";
 
-const apiUrl = process.env.NEXT_PUBLIC_SITE_URL
-  ? `${process.env.NEXT_PUBLIC_SITE_URL}/api`
-  : "http://localhost:3000/api";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80";
@@ -57,14 +59,9 @@ function slugify(value: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-async function getCategory(slug: string): Promise<Category | null> {
+const getCategory = cache(async (slug: string): Promise<Category | null> => {
   try {
-    const response = await fetch(`${apiUrl}/products/categories`, {
-      next: { revalidate: 60 },
-    });
-    if (!response.ok) return null;
-    const payload = await response.json();
-    const categories = Array.isArray(payload?.data) ? payload.data : [];
+    const categories = await getCategoriesFromSupabase();
     return (
       categories.find(
         (entry: Category) =>
@@ -74,25 +71,18 @@ async function getCategory(slug: string): Promise<Category | null> {
   } catch {
     return null;
   }
-}
+});
 
-async function getCategoryProducts(
+const getCategoryProducts = cache(async (
   categoryId: string | number,
-): Promise<Product[]> {
+): Promise<Product[]> => {
   try {
-    const response = await fetch(
-      `${apiUrl}/products?category=${encodeURIComponent(String(categoryId))}`,
-      {
-        next: { revalidate: 60 },
-      },
-    );
-    if (!response.ok) return [];
-    const payload = await response.json();
-    return Array.isArray(payload?.data) ? payload.data : [];
+    const result = await getProductsFromSupabase({ category: categoryId });
+    return result.data;
   } catch {
     return [];
   }
-}
+});
 
 export async function generateMetadata({
   params,

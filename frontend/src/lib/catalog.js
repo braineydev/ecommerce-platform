@@ -1,6 +1,21 @@
 import { createClient } from "@supabase/supabase-js";
 
 const PRODUCT_SELECT = "*, categories(id, name, slug)";
+const CATALOG_REQUEST_TIMEOUT_MS = 4000;
+
+async function fetchCatalogRequest(input, init = {}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(
+    () => controller.abort(),
+    CATALOG_REQUEST_TIMEOUT_MS,
+  );
+
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 function normalizeImageValues(value) {
   if (Array.isArray(value)) {
@@ -38,6 +53,7 @@ export function createSupabaseAdminClient() {
   }
 
   return createClient(supabaseUrl, supabaseKey, {
+    global: { fetch: fetchCatalogRequest },
     auth: {
       persistSession: false,
       autoRefreshToken: false,
@@ -83,6 +99,18 @@ export function normalizeProduct(product) {
   };
 }
 
+/**
+ * @param {{
+ *   search?: string,
+ *   category?: string | number,
+ *   featured?: string,
+ *   brand?: string,
+ *   min_price?: string | number,
+ *   max_price?: string | number,
+ *   page?: string | number,
+ *   limit?: string | number,
+ * }} filters
+ */
 export async function getProductsFromSupabase({
   search,
   category,
@@ -93,6 +121,7 @@ export async function getProductsFromSupabase({
   page = 1,
   limit = 24,
 } = {}) {
+  const startedAt = performance.now();
   const supabase = createSupabaseAdminClient();
   const normalizedPage =
     Number.isInteger(Number(page)) && Number(page) > 0 ? Number(page) : 1;
@@ -133,6 +162,11 @@ export async function getProductsFromSupabase({
       normalizedPage * normalizedLimit - 1,
     );
 
+  console.info("catalog.supabase.products", {
+    durationMs: Math.round(performance.now() - startedAt),
+    page: normalizedPage,
+    limit: normalizedLimit,
+  });
   if (error) throw error;
 
   return {
@@ -143,6 +177,7 @@ export async function getProductsFromSupabase({
 }
 
 export async function getProductByIdFromSupabase(id) {
+  const startedAt = performance.now();
   const supabase = createSupabaseAdminClient();
   const normalizedId = String(id || "").trim();
   const isUuid = /^[0-9a-fA-F-]{8,}$/.test(normalizedId);
@@ -157,6 +192,9 @@ export async function getProductByIdFromSupabase(id) {
       : query.eq("slug", normalizedId).single();
 
   const { data, error } = await request;
+  console.info("catalog.supabase.product", {
+    durationMs: Math.round(performance.now() - startedAt),
+  });
   if (error) {
     if (error.code === "PGRST116") return null;
     throw error;
@@ -166,11 +204,15 @@ export async function getProductByIdFromSupabase(id) {
 }
 
 export async function getCategoriesFromSupabase() {
+  const startedAt = performance.now();
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("categories")
     .select("*")
     .order("name");
+  console.info("catalog.supabase.categories", {
+    durationMs: Math.round(performance.now() - startedAt),
+  });
   if (error) throw error;
   return data;
 }
