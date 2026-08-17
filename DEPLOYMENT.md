@@ -17,6 +17,7 @@ appropriate:
 | `SUPABASE_URL` | Yes | Supabase project URL; server-only. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | Server-only privileged key. Never use `NEXT_PUBLIC_`. |
 | `NEXT_PUBLIC_SITE_URL` | Yes in production | Canonical storefront URL, for example `https://shop.example.com`. |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Optional | Google Analytics 4 ID (`G-...`) used for page-view tracking. |
 | `AUTH_CALLBACK_URL` | Optional | Explicit OAuth callback URL; otherwise the request origin is used. |
 
 Add the production and preview callback URLs (`https://your-domain/auth/callback`)

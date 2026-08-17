@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import CartNotice from "../components/CartNotice";
 import CartWidget from "../components/CartWidget";
 import Footer from "../components/Footer";
+import GoogleAnalytics from "../components/GoogleAnalytics";
 import Navbar from "../components/Navbar";
 import WhatsAppHelp from "../components/WhatsAppHelp";
 import { AuthProvider } from "../context/AuthContext";
@@ -60,9 +62,14 @@ export default function RootLayout({
       lang="en"
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-[#FBFBFB]">
-        <AuthProvider>
+      >
+        <body className="min-h-full flex flex-col bg-[#FBFBFB]">
+          <Suspense fallback={null}>
+            <GoogleAnalytics
+              measurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}
+            />
+          </Suspense>
+          <AuthProvider>
           <CartProvider>
             <Navbar />
             <CartNotice />
