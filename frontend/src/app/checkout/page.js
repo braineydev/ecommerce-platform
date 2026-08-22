@@ -159,7 +159,7 @@ export default function CheckoutPage() {
                       value={formData.fullName}
                       onChange={handleInputChange}
                       className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-black"
-                      placeholder="John Doe"
+                      placeholder="Alex Mwaura"
                     />
                   </div>
 
@@ -174,7 +174,7 @@ export default function CheckoutPage() {
                       value={formData.address}
                       onChange={handleInputChange}
                       className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
-                      placeholder="123 Example Street, Nairobi"
+                      placeholder="Kawangware Junction, Nairobi"
                     />
                   </div>
 
@@ -203,7 +203,7 @@ export default function CheckoutPage() {
                       value={formData.notes}
                       onChange={handleInputChange}
                       className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
-                      placeholder="Please deliver after 5:00 PM"
+                      placeholder="Deliver Using Super Metro"
                     />
                   </div>
                 </div>
