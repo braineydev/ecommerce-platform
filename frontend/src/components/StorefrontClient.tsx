@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowRight, Heart, Package } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Heart,
+  MapPin,
+  MessageCircle,
+  Package,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
@@ -383,6 +390,32 @@ export default function StorefrontClient({
                 <br />
                 beautifully chosen.
               </h1>
+              <div className="mt-6 grid max-w-xl gap-x-5 gap-y-3 text-[11px] font-medium text-[#31594f] sm:grid-cols-3">
+                <span className="flex items-center gap-2">
+                  <MessageCircle
+                    size={15}
+                    strokeWidth={1.8}
+                    className="shrink-0 text-[#25806e]"
+                  />
+                  WhatsApp advice before you buy
+                </span>
+                <span className="flex items-center gap-2">
+                  <CheckCircle2
+                    size={15}
+                    strokeWidth={1.8}
+                    className="shrink-0 text-[#25806e]"
+                  />
+                  Stock checked before we confirm
+                </span>
+                <span className="flex items-center gap-2">
+                  <MapPin
+                    size={15}
+                    strokeWidth={1.8}
+                    className="shrink-0 text-[#25806e]"
+                  />
+                  Clear delivery across Kenya
+                </span>
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-6">
               <a

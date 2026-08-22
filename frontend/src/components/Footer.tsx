@@ -57,9 +57,9 @@ export default function Footer() {
                   <MapPin size={16} />
                 </span>
                 <span>
-                  Hotel Jaffers
+                  Amber House, Shop D6
                   <br />
-                  Amber Hse
+                  Mfangano Lane
                 </span>
                 <ArrowUpRight size={15} className="ml-auto" />
               </Link>
