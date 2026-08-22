@@ -54,7 +54,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const handlePlaceOrder = async e => {
+  const handlePlaceOrder = e => {
     e.preventDefault();
 
     if (cart.length === 0) {
@@ -71,36 +71,12 @@ export default function CheckoutPage() {
     });
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(message)}`;
 
-    let newWindow = null;
-    if (typeof window !== "undefined") {
-      const placeholderHtml = encodeURIComponent(
-        `<html><head><title>Preparing WhatsApp...</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;background:#f5f5f5;color:#111;"><div style="text-align:center;"><p style="font-size:1rem;margin:0;">Preparing WhatsApp message...</p></div></body></html>`,
-      );
-      newWindow = window.open(
-        `data:text/html,${placeholderHtml}`,
-        "_blank",
-        "noopener,noreferrer",
-      );
-    }
-
     try {
-      if (newWindow) {
-        try {
-          newWindow.location.href = whatsappUrl;
-        } catch {
-          openWhatsAppUrl(whatsappUrl);
-        }
-      } else {
-        openWhatsAppUrl(whatsappUrl);
-      }
-
+      // This runs directly from the form submit event so browsers treat it as
+      // a user-initiated WhatsApp request, just like the site's help buttons.
+      openWhatsAppUrl(whatsappUrl);
       setOrderSuccess(true);
     } catch (error) {
-      if (newWindow) {
-        try {
-          newWindow.close();
-        } catch {}
-      }
       console.error("Checkout Error:", error.message);
       alert(`Unable to open WhatsApp: ${error.message}`);
     } finally {
